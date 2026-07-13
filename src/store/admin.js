@@ -831,7 +831,7 @@ export const selectClientsLoading  = (s) => s.admin.clientsState.loading;
 
 // Fraude
 export const selectFraudAlerts     = (s) => s.admin.fraudAlerts;
-export const selectGpsAnalysis     = (s) => s.admin.gpsAnalysis;
+export const selectGpsAnalysis     = (s) => s.admin.gpsAAnalysis;
 export const selectReportedDrivers = (s) => s.admin.reportedDrivers;
 export const selectFraudLoading    = (s) => s.admin.fraudState.loading;
 
