@@ -1,0 +1,634 @@
+import { useState } from "react";
+
+/* ─── Google Fonts ──────────────────────────────────────────────────── */
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap";
+if (!document.querySelector(`link[href="${FONT_LINK}"]`)) {
+  const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_LINK;
+  document.head.appendChild(l);
+}
+
+const T = {
+  bg:"#f0f2f5", bg1:"#ffffff",
+  green:"#2ecc71", greenD:"#1a4731",
+  greenPl:"rgba(46,204,113,0.10)", greenBd:"rgba(46,204,113,0.22)",
+  red:"#e74c3c", redPl:"rgba(231,76,60,0.10)", redBd:"rgba(231,76,60,0.22)",
+  amber:"#f0a500", amberPl:"rgba(240,165,0,0.10)", amberBd:"rgba(240,165,0,0.22)",
+  blue:"#2980b9", bluePl:"rgba(41,128,185,0.10)", blueBd:"rgba(41,128,185,0.22)",
+  purple:"#8e44ad", purplePl:"rgba(142,68,173,0.10)", purpleBd:"rgba(142,68,173,0.22)",
+  t1:"#1a2332", t2:"#4a5568", t3:"#9aa3b0",
+  border:"rgba(26,71,49,0.08)", border2:"rgba(26,71,49,0.14)",
+  mono:"'DM Mono', monospace", sans:"'Inter', sans-serif", disp:"'Syne', sans-serif",
+};
+
+const CSS = `
+  @keyframes op-fadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes op-slideIn  { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes op-drawerIn { from{opacity:0;transform:translateX(36px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes op-overlayIn{ from{opacity:0} to{opacity:1} }
+  @keyframes op-blink    { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .op-row          { transition:background .15s; cursor:pointer; }
+  .op-row:hover td { background:rgba(46,204,113,.03) !important; }
+  .op-row:hover .op-arrow { opacity:1 !important; transform:translateX(0) !important; }
+  .op-btn          { transition:all .18s; cursor:pointer; border:none; }
+  .op-btn:hover    { filter:brightness(1.08); transform:translateY(-1px); }
+  .op-tab          { transition:all .18s; cursor:pointer; background:none; border:none; }
+  .op-tab:hover    { color:${T.greenD} !important; }
+  .op-close:hover  { background:rgba(0,0,0,.07) !important; }
+  .op-kpi:hover    { transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,71,49,.12) !important; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:#d1d9d1; border-radius:4px; }
+`;
+if (!document.querySelector("#op-css")) {
+  const s = document.createElement("style"); s.id = "op-css"; s.textContent = CSS;
+  document.head.appendChild(s);
+}
+
+/* ─── Mock Data ──────────────────────────────────────────────────────── */
+const CLIENTS_DATA = [
+  {
+    id:"CLT-001", ini:"FS", nom:"Fatoumata Sawadogo", tel:"76 44 11 22",
+    email:"fatoumata.s@email.com", ville:"Bobo-Dioulasso",
+    solde:15000, soldeMinimum:500,
+    statut:"actif", inscription:"12 jan. 2025", totalCourses:24,
+    operations:[
+      { id:"OP-1051", type:"depot",   montant:10000, mode:"mobile_money", date:"06 mai 2025", heure:"14:10", statut:"validé",   ref:"MM-BF-24519" },
+      { id:"OP-1048", type:"depot",   montant:5000,  mode:"especes",      date:"05 mai 2025", heure:"10:30", statut:"validé",   ref:"ESP-00823" },
+      { id:"OP-1041", type:"retrait", montant:3000,  mode:"mobile_money", date:"04 mai 2025", heure:"16:45", statut:"validé",   ref:"MM-BF-24401" },
+      { id:"OP-1035", type:"depot",   montant:8000,  mode:"en_ligne",     date:"02 mai 2025", heure:"09:15", statut:"validé",   ref:"PAY-BF-11022" },
+      { id:"OP-1028", type:"retrait", montant:2000,  mode:"especes",      date:"28 avr. 2025",heure:"11:00", statut:"en_attente",ref:"—" },
+    ],
+  },
+  {
+    id:"CLT-002", ini:"IT", nom:"Ibrahim Traoré", tel:"70 98 11 22",
+    email:"ibrahim.t@email.com", ville:"Bobo-Dioulasso",
+    solde:2200, soldeMinimum:500,
+    statut:"actif", inscription:"03 fév. 2025", totalCourses:8,
+    operations:[
+      { id:"OP-1049", type:"depot",   montant:3000,  mode:"mobile_money", date:"06 mai 2025", heure:"13:20", statut:"validé",   ref:"MM-BF-24520" },
+      { id:"OP-1040", type:"retrait", montant:800,   mode:"mobile_money", date:"03 mai 2025", heure:"08:50", statut:"validé",   ref:"MM-BF-24388" },
+      { id:"OP-1029", type:"depot",   montant:1500,  mode:"especes",      date:"27 avr. 2025",heure:"14:00", statut:"rejeté",   ref:"—" },
+    ],
+  },
+  {
+    id:"CLT-003", ini:"MO", nom:"Mariam Ouédraogo", tel:"70 22 44 66",
+    email:"mariam.o@email.com", ville:"Ouagadougou",
+    solde:0, soldeMinimum:500,
+    statut:"suspendu", inscription:"20 jan. 2025", totalCourses:3,
+    operations:[
+      { id:"OP-1039", type:"depot",   montant:2000,  mode:"en_ligne",     date:"02 mai 2025", heure:"10:00", statut:"rejeté",   ref:"PAY-BF-11010" },
+      { id:"OP-1022", type:"depot",   montant:500,   mode:"especes",      date:"22 avr. 2025",heure:"09:30", statut:"validé",   ref:"ESP-00788" },
+    ],
+  },
+  {
+    id:"CLT-004", ini:"AB", nom:"Awa Barro", tel:"76 11 55 77",
+    email:"awa.b@email.com", ville:"Bobo-Dioulasso",
+    solde:8500, soldeMinimum:500,
+    statut:"actif", inscription:"15 jan. 2025", totalCourses:16,
+    operations:[
+      { id:"OP-1050", type:"depot",   montant:5000,  mode:"mobile_money", date:"06 mai 2025", heure:"11:40", statut:"validé",   ref:"MM-BF-24515" },
+      { id:"OP-1043", type:"retrait", montant:2000,  mode:"mobile_money", date:"04 mai 2025", heure:"15:30", statut:"en_attente",ref:"—" },
+      { id:"OP-1031", type:"depot",   montant:7000,  mode:"en_ligne",     date:"29 avr. 2025",heure:"10:20", statut:"validé",   ref:"PAY-BF-11001" },
+      { id:"OP-1020", type:"retrait", montant:1500,  mode:"especes",      date:"21 avr. 2025",heure:"14:30", statut:"validé",   ref:"ESP-00775" },
+    ],
+  },
+  {
+    id:"CLT-005", ini:"RD", nom:"Rokia Diallo", tel:"70 88 33 55",
+    email:"rokia.d@email.com", ville:"Koudougou",
+    solde:3000, soldeMinimum:500,
+    statut:"actif", inscription:"28 jan. 2025", totalCourses:11,
+    operations:[
+      { id:"OP-1047", type:"depot",   montant:4000,  mode:"especes",      date:"05 mai 2025", heure:"16:00", statut:"validé",   ref:"ESP-00831" },
+      { id:"OP-1036", type:"retrait", montant:1000,  mode:"mobile_money", date:"01 mai 2025", heure:"12:00", statut:"validé",   ref:"MM-BF-24355" },
+    ],
+  },
+  {
+    id:"CLT-006", ini:"SN", nom:"Salif Nikiema", tel:"70 66 11 33",
+    email:"salif.n@email.com", ville:"Bobo-Dioulasso",
+    solde:22000, soldeMinimum:500,
+    statut:"actif", inscription:"05 jan. 2025", totalCourses:42,
+    operations:[
+      { id:"OP-1052", type:"depot",   montant:20000, mode:"en_ligne",     date:"06 mai 2025", heure:"09:00", statut:"validé",   ref:"PAY-BF-11044" },
+      { id:"OP-1046", type:"retrait", montant:5000,  mode:"mobile_money", date:"05 mai 2025", heure:"17:10", statut:"en_attente",ref:"—" },
+      { id:"OP-1038", type:"depot",   montant:10000, mode:"mobile_money", date:"01 mai 2025", heure:"08:30", statut:"validé",   ref:"MM-BF-24340" },
+      { id:"OP-1025", type:"retrait", montant:3000,  mode:"especes",      date:"25 avr. 2025",heure:"15:00", statut:"validé",   ref:"ESP-00801" },
+    ],
+  },
+  {
+    id:"CLT-007", ini:"ST", nom:"Salimata Tall", tel:"76 55 99 11",
+    email:"salimata.t@email.com", ville:"Bobo-Dioulasso",
+    solde:0, soldeMinimum:500,
+    statut:"suspendu", inscription:"18 jan. 2025", totalCourses:2,
+    operations:[
+      { id:"OP-1033", type:"depot",   montant:1000,  mode:"especes",      date:"30 avr. 2025",heure:"10:00", statut:"rejeté",   ref:"—" },
+    ],
+  },
+];
+
+/* ─── Configs ─────────────────────────────────────────────────────────── */
+const OP_TYPE = {
+  depot:   { label:"Dépôt",   icon:"↓", color:T.green,  bg:T.greenPl, bd:T.greenBd },
+  retrait: { label:"Retrait", icon:"↑", color:T.red,    bg:T.redPl,   bd:T.redBd   },
+};
+const OP_STATUT = {
+  validé:     { label:"Validé",     bg:T.greenPl, bd:T.greenBd, color:T.greenD },
+  en_attente: { label:"En attente", bg:T.amberPl, bd:T.amberBd, color:T.amber  },
+  rejeté:     { label:"Rejeté",     bg:T.redPl,   bd:T.redBd,   color:T.red    },
+};
+const MODE_CFG = {
+  mobile_money: { label:"Mobile Money",     icon:"📱", color:T.purple },
+  en_ligne:     { label:"En ligne",         icon:"💳", color:T.blue   },
+  especes:      { label:"Espèces",          icon:"💵", color:T.amber  },
+};
+const CLIENT_STATUT = {
+  actif:    { label:"Actif",    bg:T.greenPl, bd:T.greenBd, color:T.greenD },
+  suspendu: { label:"Suspendu", bg:T.redPl,   bd:T.redBd,   color:T.red    },
+};
+
+const AV_PAL = [
+  {bg:"rgba(46,204,113,.15)", c:T.greenD},
+  {bg:"rgba(41,128,185,.15)", c:T.blue  },
+  {bg:"rgba(240,165,0,.15)",  c:"#7a5200"},
+  {bg:"rgba(231,76,60,.15)",  c:T.red   },
+  {bg:"rgba(142,68,173,.15)", c:T.purple},
+];
+const avColor = (s) => AV_PAL[s.charCodeAt(0) % AV_PAL.length];
+
+/* ─── Atoms ──────────────────────────────────────────────────────────── */
+function Av({ ini, size=34 }) {
+  const p = avColor(ini);
+  return (
+    <div style={{ width:size, height:size, borderRadius:"50%", flexShrink:0, background:p.bg, color:p.c, border:`1.5px solid ${p.c}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:size*.34, fontWeight:700, fontFamily:T.mono }}>{ini}</div>
+  );
+}
+
+function Tag({ label, bg, bd, color }) {
+  return <span style={{ display:"inline-flex", alignItems:"center", padding:"4px 11px", borderRadius:20, fontSize:11, fontWeight:600, fontFamily:T.sans, background:bg, color, border:`1px solid ${bd}` }}>{label}</span>;
+}
+
+function SH({ title }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:14 }}>
+      <div style={{ width:3, height:14, borderRadius:2, background:T.green }}/>
+      <span style={{ fontFamily:T.disp, fontSize:13, fontWeight:700, color:T.t1, letterSpacing:.3 }}>{title}</span>
+    </div>
+  );
+}
+
+/* ─── Solde visuel ───────────────────────────────────────────────────── */
+function SoldeGauge({ solde, minimum }) {
+  const pct    = Math.min((solde / 25000) * 100, 100);
+  const color  = solde < minimum ? T.red : solde < 2000 ? T.amber : T.green;
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:6 }}>
+        <div>
+          <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:2 }}>Solde du portefeuille</div>
+          <div style={{ fontFamily:T.mono, fontSize:28, fontWeight:600, color, lineHeight:1 }}>{solde.toLocaleString()} F</div>
+        </div>
+        <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>min. {minimum.toLocaleString()} F</div>
+      </div>
+      <div style={{ height:8, borderRadius:8, background:T.border2, overflow:"hidden" }}>
+        <div style={{ height:"100%", borderRadius:8, width:`${pct}%`, background:`linear-gradient(90deg,${color},${color}99)`, boxShadow:`0 0 8px ${color}55`, transition:"width 1s ease" }}/>
+      </div>
+      {solde < minimum && (
+        <div style={{ fontFamily:T.mono, fontSize:10, color:T.red, marginTop:5 }}>⚠ Solde insuffisant pour commander une course</div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Drawer client ──────────────────────────────────────────────────── */
+function ClientDrawer({ client, onClose, onValiderRetrait, onRejeter }) {
+  const [tab, setTab] = useState("operations");
+  if (!client) return null;
+  const cs = CLIENT_STATUT[client.statut] || CLIENT_STATUT.actif;
+
+  const totalDepots   = client.operations.filter(o=>o.type==="depot"  &&o.statut==="validé").reduce((s,o)=>s+o.montant, 0);
+  const totalRetraits = client.operations.filter(o=>o.type==="retrait"&&o.statut==="validé").reduce((s,o)=>s+o.montant, 0);
+  const enAttente     = client.operations.filter(o=>o.statut==="en_attente");
+
+  const TABS = [
+    { id:"operations", label:"Opérations" },
+    { id:"solde",      label:"Solde & Stats" },
+  ];
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(10,20,15,.32)", backdropFilter:"blur(2px)", zIndex:99, animation:"op-overlayIn .22s ease both" }}/>
+      <div style={{ position:"fixed", top:0, right:0, bottom:0, width:540, background:T.bg1, boxShadow:"-8px 0 48px rgba(10,20,15,.16)", zIndex:100, display:"flex", flexDirection:"column", animation:"op-drawerIn .28s cubic-bezier(.2,.8,.4,1) both", fontFamily:T.sans }}>
+
+        {/* Header */}
+        <div style={{ padding:"18px 22px 0", borderBottom:`1px solid ${T.border}`, flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <Av ini={client.ini} size={46}/>
+              <div>
+                <div style={{ fontFamily:T.disp, fontSize:16, fontWeight:700, color:T.t1, marginBottom:3 }}>{client.nom}</div>
+                <div style={{ fontFamily:T.mono, fontSize:11, color:T.t3, marginBottom:5 }}>{client.id} · {client.tel}</div>
+                <Tag label={cs.label} bg={cs.bg} bd={cs.bd} color={cs.color}/>
+              </div>
+            </div>
+            <button className="op-close" onClick={onClose} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${T.border}`, background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.t2, transition:"background .15s" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          {/* Infos rapides */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:14 }}>
+            {[
+              { label:"Inscrit le",    val:client.inscription },
+              { label:"Courses total", val:client.totalCourses },
+              { label:"Ville",         val:client.ville },
+            ].map((item,i) => (
+              <div key={i} style={{ background:T.bg, borderRadius:9, padding:"8px 10px", border:`1px solid ${T.border}` }}>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:.8, marginBottom:3 }}>{item.label}</div>
+                <div style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:T.t1 }}>{item.val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sub-tabs */}
+          <div style={{ display:"flex", gap:0 }}>
+            {TABS.map(t => {
+              const active = tab === t.id;
+              return (
+                <button key={t.id} className="op-tab" onClick={() => setTab(t.id)} style={{ padding:"8px 18px", borderBottom:active?`2px solid ${T.greenD}`:"2px solid transparent", marginBottom:-1, color:active?T.greenD:T.t3, fontWeight:active?700:400, fontFamily:T.sans, fontSize:12 }}>
+                  {t.label}
+                  {t.id==="operations" && enAttente.length > 0 && (
+                    <span style={{ marginLeft:6, background:T.amberPl, color:T.amber, border:`1px solid ${T.amberBd}`, borderRadius:20, fontSize:9, fontFamily:T.mono, padding:"1px 6px" }}>{enAttente.length}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex:1, overflowY:"auto", padding:"18px 22px", display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* ─── Onglet opérations ─── */}
+          {tab === "operations" && (<>
+            {/* En attente */}
+            {enAttente.length > 0 && (
+              <div style={{ background:T.amberPl, border:`1.5px solid ${T.amberBd}`, borderRadius:12, padding:"14px 16px" }}>
+                <SH title={`${enAttente.length} opération(s) en attente de validation`}/>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {enAttente.map(op => {
+                    const ot = OP_TYPE[op.type];
+                    const mc = MODE_CFG[op.mode];
+                    return (
+                      <div key={op.id} style={{ background:T.bg1, borderRadius:10, padding:"12px 14px", border:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <div style={{ width:36, height:36, borderRadius:9, background:ot.bg, border:`1px solid ${ot.bd}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, fontWeight:700, color:ot.color }}>{ot.icon}</div>
+                          <div>
+                            <div style={{ fontFamily:T.sans, fontSize:13, fontWeight:600, color:T.t1 }}>{ot.label} — {op.montant.toLocaleString()} F</div>
+                            <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{mc.icon} {mc.label} · {op.date} à {op.heure}</div>
+                          </div>
+                        </div>
+                        <div style={{ display:"flex", gap:8 }}>
+                          <button className="op-btn" onClick={() => onValiderRetrait(client.id, op.id)} style={{ height:32, borderRadius:8, background:T.greenD, color:"#fff", fontFamily:T.sans, fontSize:11, fontWeight:600, padding:"0 12px", display:"flex", alignItems:"center", gap:5 }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>
+                            Valider
+                          </button>
+                          <button className="op-btn" onClick={() => onRejeter(client.id, op.id)} style={{ height:32, borderRadius:8, background:T.redPl, color:T.red, border:`1px solid ${T.redBd}`, fontFamily:T.sans, fontSize:11, fontWeight:600, padding:"0 12px", display:"flex", alignItems:"center", gap:5 }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="11" height="11"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            Rejeter
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Historique complet */}
+            <div style={{ background:T.bg1, border:`1px solid ${T.border}`, borderRadius:12, overflow:"hidden" }}>
+              <div style={{ padding:"14px 16px", borderBottom:`1px solid ${T.border}` }}>
+                <SH title="Historique des opérations"/>
+              </div>
+              <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+                <thead>
+                  <tr style={{ background:"#fafbfc" }}>
+                    {["Type","Montant","Mode","Date","Réf.","Statut"].map(h => (
+                      <th key={h} style={{ padding:"8px 14px", textAlign:"left", fontSize:9, fontFamily:T.mono, color:T.t3, fontWeight:500, textTransform:"uppercase", letterSpacing:.8, borderBottom:`1px solid ${T.border2}` }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {client.operations.map((op, i) => {
+                    const ot = OP_TYPE[op.type];
+                    const os = OP_STATUT[op.statut] || OP_STATUT.en_attente;
+                    const mc = MODE_CFG[op.mode];
+                    return (
+                      <tr key={op.id} style={{ borderBottom:`1px solid ${T.border}`, animation:`op-slideIn .35s ease ${i*45}ms both` }}>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                            <div style={{ width:28, height:28, borderRadius:7, background:ot.bg, border:`1px solid ${ot.bd}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:ot.color }}>{ot.icon}</div>
+                            <span style={{ fontFamily:T.sans, fontSize:12, fontWeight:600, color:ot.color }}>{ot.label}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <span style={{ fontFamily:T.mono, fontSize:13, fontWeight:700, color:op.type==="depot"?T.greenD:T.red }}>
+                            {op.type==="depot"?"+":"-"}{op.montant.toLocaleString()} F
+                          </span>
+                        </td>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <span style={{ fontFamily:T.sans, fontSize:11, color:T.t2 }}>{mc.icon} {mc.label}</span>
+                        </td>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <div style={{ fontFamily:T.mono, fontSize:11, color:T.t1 }}>{op.date}</div>
+                          <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{op.heure}</div>
+                        </td>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <span style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{op.ref}</span>
+                        </td>
+                        <td style={{ padding:"10px 14px", verticalAlign:"middle" }}>
+                          <Tag label={os.label} bg={os.bg} bd={os.bd} color={os.color}/>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>)}
+
+          {/* ─── Onglet solde & stats ─── */}
+          {tab === "solde" && (<>
+            <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"16px 18px" }}>
+              <SH title="Portefeuille"/>
+              <SoldeGauge solde={client.solde} minimum={client.soldeMinimum}/>
+            </div>
+
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              {[
+                { label:"Total dépôts validés",   val:`+${totalDepots.toLocaleString()} F`,   color:T.green, bg:T.greenPl, bd:T.greenBd, icon:"↓" },
+                { label:"Total retraits validés",  val:`-${totalRetraits.toLocaleString()} F`, color:T.red,   bg:T.redPl,   bd:T.redBd,   icon:"↑" },
+              ].map((item,i) => (
+                <div key={i} style={{ background:item.bg, border:`1px solid ${item.bd}`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                    <div style={{ width:28, height:28, borderRadius:7, background:T.bg1, border:`1px solid ${item.bd}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, fontWeight:700, color:item.color }}>{item.icon}</div>
+                    <span style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1 }}>{item.label}</span>
+                  </div>
+                  <div style={{ fontFamily:T.mono, fontSize:20, fontWeight:700, color:item.color }}>{item.val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Stats opérations */}
+            <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"14px 16px" }}>
+              <SH title="Répartition des opérations"/>
+              {[
+                { label:"Dépôts",       count:client.operations.filter(o=>o.type==="depot").length,   color:T.green },
+                { label:"Retraits",     count:client.operations.filter(o=>o.type==="retrait").length, color:T.red   },
+                { label:"Validées",     count:client.operations.filter(o=>o.statut==="validé").length,   color:T.greenD },
+                { label:"En attente",   count:client.operations.filter(o=>o.statut==="en_attente").length,color:T.amber  },
+                { label:"Rejetées",     count:client.operations.filter(o=>o.statut==="rejeté").length,   color:T.red    },
+              ].map((item,i) => {
+                const pct = client.operations.length > 0 ? Math.round(item.count/client.operations.length*100) : 0;
+                return (
+                  <div key={i} style={{ marginBottom:i<4?12:0 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+                      <span style={{ fontFamily:T.sans, fontSize:12, color:T.t2 }}>{item.label}</span>
+                      <div style={{ display:"flex", gap:8 }}>
+                        <span style={{ fontFamily:T.mono, fontSize:11, fontWeight:600, color:item.color }}>{pct}%</span>
+                        <span style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{item.count}</span>
+                      </div>
+                    </div>
+                    <div style={{ height:5, borderRadius:5, background:T.border2, overflow:"hidden" }}>
+                      <div style={{ height:"100%", borderRadius:5, width:`${pct}%`, background:`linear-gradient(90deg,${item.color},${item.color}88)`, boxShadow:`0 0 6px ${item.color}44`, transition:"width 1s ease" }}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Contact */}
+            <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"14px 16px" }}>
+              <SH title="Informations contact"/>
+              {[
+                { label:"Téléphone", val:client.tel },
+                { label:"Email",     val:client.email },
+                { label:"Ville",     val:client.ville },
+              ].map((item,i) => (
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 0", borderBottom:i<2?`1px solid ${T.border}`:"none" }}>
+                  <span style={{ fontFamily:T.sans, fontSize:12, color:T.t3 }}>{item.label}</span>
+                  <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:T.t1 }}>{item.val}</span>
+                </div>
+              ))}
+            </div>
+          </>)}
+        </div>
+
+        {/* Actions footer */}
+        <div style={{ padding:"14px 22px", borderTop:`1px solid ${T.border}`, display:"flex", gap:10, flexShrink:0 }}>
+          <a href={`tel:+226${client.tel.replace(/\s/g,"")}`} className="op-btn" style={{ flex:1, height:42, borderRadius:10, background:T.bluePl, color:T.blue, border:`1.5px solid ${T.blueBd}`, fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8, textDecoration:"none" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.07a16 16 0 006.02 6.02l1.43-1.43a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 13.92z"/></svg>
+            Appeler
+          </a>
+          {client.statut === "actif" && (
+            <button className="op-btn" style={{ flex:1, height:42, borderRadius:10, background:T.redPl, color:T.red, border:`1.5px solid ${T.redBd}`, fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Suspendre le compte
+            </button>
+          )}
+          {client.statut === "suspendu" && (
+            <button className="op-btn" style={{ flex:1, height:42, borderRadius:10, background:T.greenD, color:"#fff", fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+              Réactiver le compte
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ─── Page principale ────────────────────────────────────────────────── */
+const TABS = ["Tous","Actifs","Suspendus","En attente"];
+
+export default function ClientsOperationsPage() {
+  const [activeTab, setActiveTab] = useState("Tous");
+  const [search,    setSearch]    = useState("");
+  const [selected,  setSelected]  = useState(null);
+  const [clients,   setClients]   = useState(CLIENTS_DATA);
+  const [notif,     setNotif]     = useState(null);
+
+  const showNotif = (msg, type="success") => { setNotif({ msg, type }); setTimeout(() => setNotif(null), 3500); };
+
+  const handleValider = (clientId, opId) => {
+    setClients(prev => prev.map(c => c.id !== clientId ? c : {
+      ...c,
+      operations: c.operations.map(o => o.id !== opId ? o : { ...o, statut:"validé", ref:`MM-BF-${Math.floor(Math.random()*90000+10000)}` }),
+    }));
+    showNotif("✓ Opération validée avec succès");
+  };
+
+  const handleRejeter = (clientId, opId) => {
+    setClients(prev => prev.map(c => c.id !== clientId ? c : {
+      ...c,
+      operations: c.operations.map(o => o.id !== opId ? o : { ...o, statut:"rejeté" }),
+    }));
+    showNotif("Opération rejetée", "error");
+  };
+
+  const opsEnAttente = clients.reduce((n, c) => n + c.operations.filter(o=>o.statut==="en_attente").length, 0);
+
+  const tabFilter = (c) => {
+    if (activeTab === "Actifs")     return c.statut === "actif";
+    if (activeTab === "Suspendus")  return c.statut === "suspendu";
+    if (activeTab === "En attente") return c.operations.some(o=>o.statut==="en_attente");
+    return true;
+  };
+
+  const filtered = clients.filter(c => {
+    const q = search.toLowerCase();
+    return tabFilter(c) && (!q || c.nom.toLowerCase().includes(q) || c.tel.includes(q) || c.id.toLowerCase().includes(q));
+  });
+
+  const counts = {
+    "Tous":       clients.length,
+    "Actifs":     clients.filter(c=>c.statut==="actif").length,
+    "Suspendus":  clients.filter(c=>c.statut==="suspendu").length,
+    "En attente": clients.filter(c=>c.operations.some(o=>o.statut==="en_attente")).length,
+  };
+
+  const tabColor = (tab) => tab==="Actifs"?T.greenD:tab==="Suspendus"?T.red:tab==="En attente"?T.amber:T.greenD;
+
+  const totalSoldes    = clients.reduce((s,c)=>s+c.solde, 0);
+  const totalDepots    = clients.flatMap(c=>c.operations).filter(o=>o.type==="depot"  &&o.statut==="validé").reduce((s,o)=>s+o.montant, 0);
+  const totalRetraits  = clients.flatMap(c=>c.operations).filter(o=>o.type==="retrait"&&o.statut==="validé").reduce((s,o)=>s+o.montant, 0);
+
+  return (
+    <div style={{ flex:1, overflowY:"auto", background:T.bg, padding:"26px 28px", display:"flex", flexDirection:"column", gap:18, fontFamily:T.sans }}>
+
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:3, height:20, borderRadius:2, background:T.green }}/>
+          <span style={{ fontFamily:T.disp, fontSize:17, fontWeight:800, color:T.t1, letterSpacing:-.2 }}>Gestion des clients & opérations</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, background:T.bg1, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 14px" }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke={T.t3} strokeWidth="2" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Nom, téléphone, ID..."
+            style={{ border:"none", outline:"none", background:"transparent", fontFamily:T.sans, fontSize:13, color:T.t1, width:200 }}/>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,minmax(0,1fr))", gap:12 }}>
+        {[
+          { label:"Total soldes",        val:`${(totalSoldes/1000).toFixed(0)}K F`, accent:T.greenD, pl:T.greenPl },
+          { label:"Dépôts du mois",      val:`${(totalDepots/1000).toFixed(0)}K F`, accent:T.green,  pl:T.greenPl },
+          { label:"Retraits du mois",    val:`${(totalRetraits/1000).toFixed(0)}K F`,accent:T.red,   pl:T.redPl   },
+          { label:"Ops en attente",      val:opsEnAttente,                          accent:T.amber,  pl:T.amberPl },
+        ].map((k,i) => (
+          <div key={i} className="op-kpi" style={{ background:T.bg1, border:`1px solid ${T.border}`, borderRadius:14, padding:"14px 18px", boxShadow:"0 2px 8px rgba(26,71,49,.06)", position:"relative", overflow:"hidden", animation:`op-fadeUp .4s ease ${i*65}ms both`, transition:"transform .2s, box-shadow .2s" }}>
+            <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg,${k.accent},${k.accent}44)` }}/>
+            <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>{k.label}</div>
+            <div style={{ fontFamily:T.mono, fontSize:28, fontWeight:500, color:k.accent, lineHeight:1 }}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:"flex", gap:0, borderBottom:`2px solid ${T.border}` }}>
+        {TABS.map(tab => {
+          const active = activeTab===tab;
+          return (
+            <button key={tab} className="op-tab" onClick={() => setActiveTab(tab)} style={{ padding:"10px 20px", borderBottom:active?`2px solid ${tabColor(tab)}`:"2px solid transparent", marginBottom:-2, color:active?tabColor(tab):T.t3, fontWeight:active?700:400, fontFamily:T.sans, fontSize:13, display:"flex", alignItems:"center", gap:7 }}>
+              {tab}
+              <span style={{ fontFamily:T.mono, fontSize:10, background:active?`${tabColor(tab)}15`:"rgba(0,0,0,.04)", color:active?tabColor(tab):T.t3, border:active?`1px solid ${tabColor(tab)}33`:"1px solid transparent", borderRadius:20, padding:"1px 7px" }}>{counts[tab]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Table clients */}
+      <div style={{ background:T.bg1, border:`1px solid ${T.border}`, borderRadius:16, boxShadow:"0 2px 12px rgba(26,71,49,.06)", overflow:"hidden", animation:"op-fadeUp .45s ease .2s both" }}>
+        <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+            <thead>
+              <tr style={{ background:"#fafbfc" }}>
+                {["Client","Téléphone","Solde","Ops totales","Dépôts validés","Retraits validés","En attente","Statut"].map(col => (
+                  <th key={col} style={{ padding:"11px 14px", textAlign:"left", fontSize:10, fontFamily:T.mono, color:T.t3, fontWeight:500, textTransform:"uppercase", letterSpacing:.9, borderBottom:`1.5px solid ${T.border2}`, whiteSpace:"nowrap" }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c,i) => {
+                const cs = CLIENT_STATUT[c.statut] || CLIENT_STATUT.actif;
+                const depots   = c.operations.filter(o=>o.type==="depot"  &&o.statut==="validé").reduce((s,o)=>s+o.montant,0);
+                const retraits = c.operations.filter(o=>o.type==="retrait"&&o.statut==="validé").reduce((s,o)=>s+o.montant,0);
+                const attente  = c.operations.filter(o=>o.statut==="en_attente").length;
+                return (
+                  <tr key={c.id} className="op-row" onClick={() => setSelected(c)} style={{ borderBottom:`1px solid ${T.border}`, animation:`op-slideIn .4s ease ${i*50}ms both` }}>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+                        <Av ini={c.ini} size={30}/>
+                        <div>
+                          <div style={{ fontFamily:T.sans, fontWeight:600, color:T.t1, fontSize:13 }}>{c.nom}</div>
+                          <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{c.id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:12, color:T.t2 }}>{c.tel}</span>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:13, fontWeight:700, color:c.solde < c.soldeMinimum ? T.red : T.greenD }}>{c.solde.toLocaleString()} F</span>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:12, color:T.t2 }}>{c.operations.length}</span>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:T.green }}>+{depots.toLocaleString()} F</span>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:T.red }}>-{retraits.toLocaleString()} F</span>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      {attente > 0
+                        ? <span style={{ display:"inline-flex", alignItems:"center", gap:5, background:T.amberPl, color:T.amber, border:`1px solid ${T.amberBd}`, borderRadius:20, fontSize:11, fontWeight:600, padding:"3px 10px", fontFamily:T.sans }}><span style={{ width:6, height:6, borderRadius:"50%", background:T.amber, animation:"op-blink 1.4s infinite" }}/>{attente} en att.</span>
+                        : <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>—</span>
+                      }
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <Tag label={cs.label} bg={cs.bg} bd={cs.bd} color={cs.color}/>
+                        <div className="op-arrow" style={{ color:T.t3, opacity:0, transform:"translateX(-5px)", transition:"all .18s" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && <tr><td colSpan={8} style={{ padding:56, textAlign:"center", color:T.t3, fontFamily:T.sans }}>Aucun client trouvé</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding:"11px 16px", borderTop:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>{filtered.length} client{filtered.length>1?"s":""} affiché{filtered.length>1?"s":""}</span>
+          <div style={{ display:"flex", gap:6 }}>
+            {["‹","1","2","3","›"].map((item,i) => <button key={i} style={{ width:28, height:28, borderRadius:7, border:`1px solid ${T.border2}`, background:i===1?T.greenD:"transparent", color:i===1?"#fff":T.t2, fontFamily:T.mono, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>{item}</button>)}
+          </div>
+        </div>
+      </div>
+
+      {selected && (
+        <ClientDrawer
+          client={clients.find(c=>c.id===selected.id)}
+          onClose={() => setSelected(null)}
+          onValiderRetrait={handleValider}
+          onRejeter={handleRejeter}
+        />
+      )}
+
+      {notif && (
+        <div style={{ position:"fixed", bottom:28, left:"50%", transform:"translateX(-50%)", background:notif.type==="error"?T.red:T.greenD, color:"#fff", borderRadius:10, padding:"11px 22px", fontFamily:T.sans, fontSize:13, fontWeight:500, boxShadow:"0 8px 24px rgba(26,71,49,.25)", zIndex:300, animation:"op-fadeUp .3s ease both" }}>{notif.msg}</div>
+      )}
+    </div>
+  );
+}

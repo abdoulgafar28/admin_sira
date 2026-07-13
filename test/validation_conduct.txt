@@ -1,0 +1,689 @@
+/*import { useState } from "react"; 
+
+
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap";
+if (!document.querySelector(`link[href="${FONT_LINK}"]`)) {
+  const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_LINK;
+  document.head.appendChild(l);
+}
+
+
+const T = {
+  bg:      "#f0f2f5",
+  bg1:     "#ffffff",
+  green:   "#2ecc71",
+  greenD:  "#1a4731",
+  greenPl: "rgba(46,204,113,0.10)",
+  greenBd: "rgba(46,204,113,0.22)",
+  red:     "#e74c3c",
+  redPl:   "rgba(231,76,60,0.10)",
+  redBd:   "rgba(231,76,60,0.22)",
+  amber:   "#f0a500",
+  amberPl: "rgba(240,165,0,0.10)",
+  amberBd: "rgba(240,165,0,0.22)",
+  blue:    "#2980b9",
+  t1:      "#1a2332",
+  t2:      "#4a5568",
+  t3:      "#9aa3b0",
+  border:  "rgba(26,71,49,0.08)",
+  border2: "rgba(26,71,49,0.14)",
+  mono:    "'DM Mono', monospace",
+  sans:    "'Inter', sans-serif",
+  disp:    "'Syne', sans-serif",
+};
+
+
+const CSS = `
+  @keyframes val-fadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes val-slideIn  { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes val-drawerIn { from{opacity:0;transform:translateX(32px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes val-overlayIn{ from{opacity:0} to{opacity:1} }
+  .val-row { transition:background .15s, box-shadow .15s; cursor:pointer; }
+  .val-row:hover td { background:rgba(46,204,113,.04) !important; }
+  .val-row:hover .val-row-arrow { opacity:1 !important; transform:translateX(0) !important; }
+  .val-tab { transition:all .18s; cursor:pointer; background:none; border:none; }
+  .val-tab:hover { color:${T.greenD} !important; }
+  .val-btn { transition:all .18s; cursor:pointer; border:none; }
+  .val-btn:hover { filter:brightness(1.1); transform:scale(1.04); }
+  .val-doc-card { transition:all .2s; cursor:pointer; }
+  .val-doc-card:hover { border-color:${T.green} !important; transform:translateY(-2px); box-shadow:0 6px 20px rgba(26,71,49,.12) !important; }
+  .val-close:hover { background:rgba(0,0,0,.08) !important; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:#d1d9d1; border-radius:4px; }
+`;
+if (!document.querySelector("#val-css")) {
+  const s = document.createElement("style"); s.id = "val-css"; s.textContent = CSS;
+  document.head.appendChild(s);
+}
+
+
+const CONDUCTEURS_INIT = [
+  {
+    id: 1,
+    nom: "Issa Somaé",
+    telephone: "70 12 20 96",
+    mobileMoney: "Moov Money — 70 12 20 96",
+    statut: "En Attente",
+    dateInscription: "02 mai 2025",
+    ville: "Bobo-Dioulasso",
+    docs: {
+      cni:       { label:"Carte nationale d'identité", numero:"BF-2019-004821", expiry:"12/2029", valide:true  },
+      permis:    { label:"Permis de conduire (A)",     numero:"PERM-070-98821", expiry:"06/2026", valide:true  },
+      carteGrise:{ label:"Carte grise moto",           numero:"CG-BF-2021-7734",expiry:"01/2024", valide:false },
+      assurance: { label:"Assurance moto",             numero:"ASS-BF-2024-112",expiry:"12/2025", valide:true  },
+    },
+  },
+  {
+    id: 2,
+    nom: "Souleymane Sidibé",
+    telephone: "70 12 34 56",
+    mobileMoney: "Orange Money — 70 12 34 56",
+    statut: "En Attente",
+    dateInscription: "01 mai 2025",
+    ville: "Ouagadougou",
+    docs: {
+      cni:       { label:"Carte nationale d'identité", numero:"BF-2020-009132", expiry:"08/2030", valide:true  },
+      permis:    { label:"Permis de conduire (A)",     numero:"PERM-070-45521", expiry:"03/2027", valide:true  },
+      carteGrise:{ label:"Carte grise moto",           numero:"CG-BF-2022-3310",expiry:"02/2027", valide:true  },
+      assurance: { label:"Assurance moto",             numero:"ASS-BF-2024-088",expiry:"11/2025", valide:true  },
+    },
+  },
+  {
+    id: 3,
+    nom: "Mamadou Diallo",
+    telephone: "70 98 76 54",
+    mobileMoney: "Moov Money — 70 98 76 54",
+    statut: "Validé",
+    dateInscription: "28 avr. 2025",
+    ville: "Bobo-Dioulasso",
+    docs: {
+      cni:       { label:"Carte nationale d'identité", numero:"BF-2018-002211", expiry:"05/2028", valide:true  },
+      permis:    { label:"Permis de conduire (A)",     numero:"PERM-070-11244", expiry:"09/2028", valide:true  },
+      carteGrise:{ label:"Carte grise moto",           numero:"CG-BF-2020-9921",expiry:"06/2025", valide:true  },
+      assurance: { label:"Assurance moto",             numero:"ASS-BF-2025-002",expiry:"01/2026", valide:true  },
+    },
+  },
+  {
+    id: 4,
+    nom: "Aminata Ouédraogo",
+    telephone: "76 44 55 66",
+    mobileMoney: "Orange Money — 76 44 55 66",
+    statut: "Refusé",
+    dateInscription: "25 avr. 2025",
+    ville: "Koudougou",
+    docs: {
+      cni:       { label:"Carte nationale d'identité", numero:"BF-2021-018820", expiry:"10/2031", valide:true  },
+      permis:    { label:"Permis de conduire (A)",     numero:"PERM-070-77012", expiry:"01/2023", valide:false },
+      carteGrise:{ label:"Carte grise moto",           numero:"CG-BF-2019-0041",expiry:"03/2022", valide:false },
+      assurance: { label:"Assurance moto",             numero:"—",              expiry:"—",       valide:false },
+    },
+  },
+];
+
+
+const AV_PAL = [
+  { bg:"rgba(46,204,113,.15)",  c:T.greenD },
+  { bg:"rgba(41,128,185,.15)",  c:T.blue   },
+  { bg:"rgba(240,165,0,.15)",   c:"#7a5200" },
+  { bg:"rgba(231,76,60,.15)",   c:T.red    },
+];
+const avColor = (s) => AV_PAL[s.charCodeAt(0) % AV_PAL.length];
+
+const STATUT_CFG = {
+  "En Attente": { bg:T.amberPl, bd:T.amberBd, color:T.amber   },
+  "Validé":     { bg:T.greenPl, bd:T.greenBd, color:T.greenD  },
+  "Refusé":     { bg:T.redPl,   bd:T.redBd,   color:T.red     },
+};
+
+function initiales(nom) {
+  return nom.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+}
+
+
+function Av({ nom, size = 36 }) {
+  const ini = initiales(nom);
+  const p   = avColor(ini);
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:"50%", flexShrink:0,
+      background:p.bg, color:p.c, border:`1.5px solid ${p.c}30`,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      fontSize:size * 0.35, fontWeight:700, fontFamily:T.mono,
+    }}>{ini}</div>
+  );
+}
+
+function Tag({ label, bg, bd, color }) {
+  return (
+    <span style={{
+      display:"inline-block", padding:"4px 12px", borderRadius:20,
+      fontSize:11, fontWeight:600, fontFamily:T.sans,
+      background:bg, color, border:`1px solid ${bd}`,
+    }}>{label}</span>
+  );
+}
+
+
+function DocPlaceholder({ type }) {
+  const configs = {
+    cni:        { bg:"#e8f5e9", accent:"#81c784", label:"CNI",   lines:[22,18,16] },
+    permis:     { bg:"#e3f2fd", accent:"#64b5f6", label:"PERM",  lines:[20,16,14] },
+    carteGrise: { bg:"#fff8e1", accent:"#ffd54f", label:"C.G.",  lines:[22,18,16] },
+    assurance:  { bg:"#fce4ec", accent:"#f48fb1", label:"ASS.",  lines:[20,16,14] },
+    photo:      { bg:"#f3e5f5", accent:"#ce93d8", label:"PHOTO", lines:[] },
+    moto:       { bg:"#e8eaf6", accent:"#9fa8da", label:"MOTO",  lines:[] },
+  };
+  const c = configs[type] || configs.cni;
+  return (
+    <div style={{
+      width:"100%", height:90, borderRadius:8, background:c.bg,
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      gap:5, overflow:"hidden",
+    }}>
+      {type === "photo" && (
+        <>
+          <div style={{ width:30, height:30, borderRadius:"50%", background:c.accent, opacity:.7 }} />
+          <div style={{ width:50, height:20, borderRadius:"8px 8px 0 0", background:c.accent, opacity:.5 }} />
+        </>
+      )}
+      {type === "moto" && (
+        <div style={{ display:"flex", gap:6, alignItems:"flex-end" }}>
+          <div style={{ width:14, height:14, borderRadius:"50%", background:c.accent, opacity:.6 }} />
+          <div style={{ width:40, height:16, borderRadius:4, background:c.accent, opacity:.5 }} />
+          <div style={{ width:14, height:14, borderRadius:"50%", background:c.accent, opacity:.6 }} />
+        </div>
+      )}
+      {type !== "photo" && type !== "moto" && (
+        <>
+          <div style={{ fontFamily:T.mono, fontSize:10, fontWeight:700, color:c.accent, letterSpacing:1, opacity:.9 }}>{c.label}</div>
+          {c.lines.map((w, i) => (
+            <div key={i} style={{ width:w*3, height:3, borderRadius:2, background:c.accent, opacity:.35 }} />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+
+function DriverDrawer({ conducteur, onClose, onValidate, onRefuse }) {
+  const [activeDoc, setActiveDoc] = useState(null);
+  if (!conducteur) return null;
+
+  const { nom, telephone, mobileMoney, statut, dateInscription, ville, docs } = conducteur;
+  const sc = STATUT_CFG[statut] || STATUT_CFG["En Attente"];
+
+  const DOC_LIST = [
+    { key:"cni",        type:"cni",        ...docs.cni        },
+    { key:"permis",     type:"permis",     ...docs.permis     },
+    { key:"carteGrise", type:"carteGrise", ...docs.carteGrise },
+    { key:"assurance",  type:"assurance",  ...docs.assurance  },
+    { key:"photo",      type:"photo",       label:"Photo du conducteur", numero:"—", expiry:"—", valide:true  },
+    { key:"moto",       type:"moto",        label:"Photo de la moto",    numero:"—", expiry:"—", valide:true  },
+  ];
+
+  return (
+    <>
+      
+      <div
+        onClick={onClose}
+        style={{
+          position:"fixed", inset:0,
+          background:"rgba(10,20,15,.35)",
+          backdropFilter:"blur(2px)",
+          zIndex:99,
+          animation:"val-overlayIn .25s ease both",
+        }}
+      />
+      
+      <div style={{
+        position:"fixed", top:0, right:0, bottom:0,
+        width:480, background:T.bg1,
+        boxShadow:"-8px 0 40px rgba(10,20,15,.18)",
+        zIndex:100, display:"flex", flexDirection:"column",
+        animation:"val-drawerIn .28s cubic-bezier(.2,.8,.4,1) both",
+        fontFamily:T.sans,
+      }}>
+        
+        <div style={{
+          padding:"20px 24px 16px",
+          borderBottom:`1px solid ${T.border}`,
+          display:"flex", alignItems:"flex-start", justifyContent:"space-between",
+          flexShrink:0,
+        }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <Av nom={nom} size={50} />
+            <div>
+              <div style={{ fontFamily:T.disp, fontSize:17, fontWeight:700, color:T.t1, lineHeight:1.2 }}>{nom}</div>
+              <div style={{ fontFamily:T.mono, fontSize:11, color:T.t3, marginTop:4 }}>{ville} · inscrit le {dateInscription}</div>
+              <div style={{ marginTop:8 }}>
+                <Tag label={statut} bg={sc.bg} bd={sc.bd} color={sc.color} />
+              </div>
+            </div>
+          </div>
+          <button
+            className="val-close"
+            onClick={onClose}
+            style={{
+              width:32, height:32, borderRadius:8, border:`1px solid ${T.border}`,
+              background:"transparent", cursor:"pointer", display:"flex",
+              alignItems:"center", justifyContent:"center", color:T.t2, flexShrink:0,
+              transition:"background .15s",
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        
+        <div style={{ padding:"16px 24px", borderBottom:`1px solid ${T.border}`, flexShrink:0 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            <InfoBlock icon="📞" label="Téléphone" value={telephone} />
+            <InfoBlock icon="💳" label="Mobile Money" value={mobileMoney} />
+          </div>
+        </div>
+
+        
+        <div style={{ flex:1, overflowY:"auto", padding:"18px 24px" }}>
+          <div style={{ fontFamily:T.disp, fontSize:13, fontWeight:700, color:T.t1, marginBottom:14, letterSpacing:.4 }}>
+            Documents & justificatifs
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            {DOC_LIST.map(doc => (
+              <div
+                key={doc.key}
+                className="val-doc-card"
+                onClick={() => setActiveDoc(activeDoc?.key === doc.key ? null : doc)}
+                style={{
+                  background: activeDoc?.key === doc.key ? T.greenPl : T.bg,
+                  border:`1.5px solid ${activeDoc?.key === doc.key ? T.green : T.border}`,
+                  borderRadius:12, padding:"12px 14px",
+                  boxShadow:"0 2px 8px rgba(26,71,49,.05)",
+                  display:"flex", flexDirection:"column", gap:8,
+                }}
+              >
+                <DocPlaceholder type={doc.type} />
+                <div>
+                  <div style={{ fontFamily:T.sans, fontSize:11, fontWeight:600, color:T.t1, marginBottom:3 }}>
+                    {doc.label}
+                  </div>
+                  {doc.numero !== "—" && (
+                    <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3, marginBottom:3 }}>{doc.numero}</div>
+                  )}
+                  {doc.expiry !== "—" && (
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                      <span style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>Exp. {doc.expiry}</span>
+                      <span style={{
+                        fontFamily:T.mono, fontSize:9, fontWeight:700, padding:"2px 7px", borderRadius:20,
+                        background:doc.valide ? T.greenPl : T.redPl,
+                        color:doc.valide ? T.greenD : T.red,
+                        border:`1px solid ${doc.valide ? T.greenBd : T.redBd}`,
+                      }}>{doc.valide ? "Valide" : "Expiré"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          
+          {activeDoc && activeDoc.numero !== "—" && (
+            <div style={{
+              marginTop:14, padding:"14px 16px", borderRadius:12,
+              background:T.greenPl, border:`1px solid ${T.greenBd}`,
+              animation:"val-fadeUp .25s ease both",
+            }}>
+              <div style={{ fontFamily:T.disp, fontSize:12, fontWeight:700, color:T.greenD, marginBottom:10 }}>
+                {activeDoc.label}
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                <DetailRow label="Numéro"    value={activeDoc.numero} />
+                <DetailRow label="Expiration" value={activeDoc.expiry} />
+                <DetailRow label="Statut"
+                  value={
+                    <span style={{ color:activeDoc.valide ? T.greenD : T.red, fontWeight:600 }}>
+                      {activeDoc.valide ? "Valide" : "Expiré / invalide"}
+                    </span>
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        
+        {statut === "En Attente" && (
+          <div style={{
+            padding:"16px 24px",
+            borderTop:`1px solid ${T.border}`,
+            display:"flex", gap:10, flexShrink:0,
+          }}>
+            <button
+              className="val-btn"
+              onClick={() => { onValidate(conducteur.id); onClose(); }}
+              style={{
+                flex:1, height:42, borderRadius:10,
+                background:T.greenD, color:"#fff",
+                fontFamily:T.sans, fontSize:13, fontWeight:600,
+                display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+              Valider le dossier
+            </button>
+            <button
+              className="val-btn"
+              onClick={() => { onRefuse(conducteur.id); onClose(); }}
+              style={{
+                flex:1, height:42, borderRadius:10,
+                background:T.redPl, color:T.red,
+                border:`1.5px solid ${T.redBd}`,
+                fontFamily:T.sans, fontSize:13, fontWeight:600,
+                display:"flex", alignItems:"center", justifyContent:"center", gap:8,
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Refuser
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function InfoBlock({ icon, label, value }) {
+  return (
+    <div style={{
+      background:T.bg, borderRadius:10, padding:"10px 12px",
+      border:`1px solid ${T.border}`,
+    }}>
+      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+        <span style={{ fontSize:13 }}>{icon}</span>
+        <span style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1 }}>{label}</span>
+      </div>
+      <div style={{ fontFamily:T.sans, fontSize:12, fontWeight:500, color:T.t1 }}>{value}</div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div>
+      <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:.8, marginBottom:3 }}>{label}</div>
+      <div style={{ fontFamily:T.mono, fontSize:11, color:T.t1, fontWeight:500 }}>{value}</div>
+    </div>
+  );
+}
+
+
+export default function SiraValidation() {
+  const [activeTab,  setActiveTab]  = useState("Tous");
+  const [search,     setSearch]     = useState("");
+  const [rows,       setRows]       = useState(CONDUCTEURS_INIT);
+  const [selected,   setSelected]   = useState(null);
+
+  const TABS = ["Tous", "En Attente", "Validé", "Refusé"];
+
+  const filtered = rows.filter(r => {
+    const matchTab = activeTab === "Tous" || r.statut === activeTab;
+    const matchQ   = r.nom.toLowerCase().includes(search.toLowerCase()) || r.telephone.includes(search);
+    return matchTab && matchQ;
+  });
+
+  const handleValidate = (id) => setRows(p => p.map(r => r.id === id ? { ...r, statut:"Validé" }  : r));
+  const handleRefuse   = (id) => setRows(p => p.map(r => r.id === id ? { ...r, statut:"Refusé" }  : r));
+
+  const counts = {
+    "Tous":       rows.length,
+    "En Attente": rows.filter(r => r.statut === "En Attente").length,
+    "Validé":     rows.filter(r => r.statut === "Validé").length,
+    "Refusé":     rows.filter(r => r.statut === "Refusé").length,
+  };
+
+  return (
+    <div style={{
+      flex:1, overflowY:"auto", background:T.bg,
+      padding:"26px 28px", display:"flex", flexDirection:"column", gap:18,
+      fontFamily:T.sans,
+    }}>
+
+      
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:3, height:18, borderRadius:2, background:T.green }} />
+          <span style={{ fontFamily:T.disp, fontSize:16, fontWeight:800, color:T.t1, letterSpacing:-.2 }}>
+            Validation des conducteurs
+          </span>
+        </div>
+        
+        <div style={{
+          display:"flex", alignItems:"center", gap:8,
+          background:T.bg1, border:`1px solid ${T.border}`,
+          borderRadius:10, padding:"7px 14px",
+        }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke={T.t3} strokeWidth="2" width="13" height="13">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher un conducteur..."
+            style={{
+              border:"none", outline:"none", background:"transparent",
+              fontFamily:T.sans, fontSize:13, color:T.t1, width:200,
+            }}
+          />
+        </div>
+      </div>
+
+      
+      <div style={{
+        display:"flex", gap:0,
+        borderBottom:`2px solid ${T.border}`,
+      }}>
+        {TABS.map(tab => {
+          const active = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              className="val-tab"
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding:"10px 22px",
+                borderBottom: active ? `2px solid ${T.greenD}` : "2px solid transparent",
+                marginBottom:-2,
+                color: active ? T.greenD : T.t3,
+                fontWeight: active ? 700 : 400,
+                fontFamily:T.sans, fontSize:13,
+                display:"flex", alignItems:"center", gap:7,
+              }}
+            >
+              {tab}
+              <span style={{
+                fontFamily:T.mono, fontSize:10,
+                background: active ? T.greenPl : "rgba(0,0,0,.05)",
+                color: active ? T.greenD : T.t3,
+                border: active ? `1px solid ${T.greenBd}` : "1px solid transparent",
+                borderRadius:20, padding:"1px 7px",
+              }}>{counts[tab]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      
+      <div style={{
+        background:T.bg1,
+        border:`1px solid ${T.border}`,
+        borderRadius:16,
+        boxShadow:"0 2px 12px rgba(26,71,49,.06)",
+        overflow:"hidden",
+        animation:"val-fadeUp .45s ease both",
+      }}>
+        <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+            <thead>
+              <tr style={{ background:"#fafbfc" }}>
+                {["Conducteur","Téléphone","Mobile Money","Inscription","Statut","Action"].map(col => (
+                  <th key={col} style={{
+                    padding:"12px 16px", textAlign:"left",
+                    fontSize:10, fontFamily:T.mono, color:T.t3,
+                    fontWeight:500, textTransform:"uppercase", letterSpacing:.9,
+                    borderBottom:`1.5px solid ${T.border2}`,
+                    whiteSpace:"nowrap",
+                  }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((row, i) => {
+                const sc = STATUT_CFG[row.statut] || STATUT_CFG["En Attente"];
+                const docsOk = Object.values(row.docs).filter(d => d.valide).length;
+                const docsTotal = Object.values(row.docs).length;
+                return (
+                  <tr
+                    key={row.id}
+                    className="val-row"
+                    onClick={() => setSelected(row)}
+                    style={{
+                      borderBottom:`1px solid ${T.border}`,
+                      animation:`val-slideIn .4s ease both`,
+                      animationDelay:`${i * 55}ms`,
+                    }}
+                  >
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <Av nom={row.nom} />
+                        <div>
+                          <div style={{ fontWeight:600, color:T.t1, fontFamily:T.sans }}>{row.nom}</div>
+                          <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3, marginTop:2 }}>{row.ville}</div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:6, color:T.t2, fontFamily:T.mono, fontSize:12 }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke={T.t3} strokeWidth="2" width="12" height="12"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.07a16 16 0 006.02 6.02l1.43-1.43a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 13.92z"/></svg>
+                        {row.telephone}
+                      </div>
+                    </td>
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ fontFamily:T.sans, fontSize:12, color:T.t2 }}>{row.mobileMoney}</div>
+                    </td>
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>{row.dateInscription}</div>
+                    </td>
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+                        <Tag label={row.statut} bg={sc.bg} bd={sc.bd} color={sc.color} />
+                        <span style={{ fontFamily:T.mono, fontSize:10, color: docsOk < docsTotal ? T.red : T.greenD }}>
+                          {docsOk}/{docsTotal} docs valides
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td style={{ padding:"13px 16px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        {row.statut === "En Attente" && (
+                          <>
+                            <button
+                              className="val-btn"
+                              onClick={e => { e.stopPropagation(); handleValidate(row.id); }}
+                              style={{
+                                width:32, height:32, borderRadius:8,
+                                background:T.greenD, color:"#fff",
+                                display:"flex", alignItems:"center", justifyContent:"center",
+                              }}
+                              title="Valider"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                            </button>
+                            <button
+                              className="val-btn"
+                              onClick={e => { e.stopPropagation(); handleRefuse(row.id); }}
+                              style={{
+                                width:32, height:32, borderRadius:8,
+                                background:T.redPl, color:T.red,
+                                border:`1px solid ${T.redBd}`,
+                                display:"flex", alignItems:"center", justifyContent:"center",
+                              }}
+                              title="Refuser"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </>
+                        )}
+                        
+                        <div
+                          className="val-row-arrow"
+                          style={{
+                            color:T.t3, opacity:0,
+                            transform:"translateX(-4px)",
+                            transition:"all .18s",
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding:48, textAlign:"center", color:T.t3, fontFamily:T.sans, fontSize:13 }}>
+                    Aucun conducteur trouvé
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        
+        <div style={{
+          padding:"12px 18px",
+          borderTop:`1px solid ${T.border}`,
+          display:"flex", alignItems:"center", justifyContent:"space-between",
+        }}>
+          <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>
+            {filtered.length} conducteur{filtered.length > 1 ? "s" : ""} affiché{filtered.length > 1 ? "s" : ""}
+          </span>
+          <div style={{ display:"flex", gap:6 }}>
+            {[
+              <svg key="l" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><polyline points="15 18 9 12 15 6"/></svg>,
+              "1","2","3",
+              <svg key="r" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><polyline points="9 18 15 12 9 6"/></svg>,
+            ].map((item, i) => (
+              <button key={i} style={{
+                width:30, height:30, borderRadius:7,
+                border:`1px solid ${T.border2}`,
+                background: i === 1 ? T.greenD : "transparent",
+                color: i === 1 ? "#fff" : T.t2,
+                fontFamily:T.mono, fontSize:12, cursor:"pointer",
+                display:"flex", alignItems:"center", justifyContent:"center",
+              }}>{item}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      
+      {selected && (
+        <DriverDrawer
+          conducteur={rows.find(r => r.id === selected.id)}
+          onClose={() => setSelected(null)}
+          onValidate={handleValidate}
+          onRefuse={handleRefuse}
+        />
+      )}
+    </div>
+  );
+}*/

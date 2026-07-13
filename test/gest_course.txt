@@ -1,0 +1,818 @@
+/*import { useState, useEffect } from "react";
+
+
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap";
+if (!document.querySelector(`link[href="${FONT_LINK}"]`)) {
+  const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_LINK;
+  document.head.appendChild(l);
+}
+
+const T = {
+  bg:"#f0f2f5", bg1:"#ffffff", bg2:"#f8faf8",
+  green:"#2ecc71", greenD:"#1a4731",
+  greenPl:"rgba(46,204,113,0.10)", greenBd:"rgba(46,204,113,0.22)",
+  red:"#e74c3c", redPl:"rgba(231,76,60,0.10)", redBd:"rgba(231,76,60,0.22)",
+  amber:"#f0a500", amberPl:"rgba(240,165,0,0.10)", amberBd:"rgba(240,165,0,0.22)",
+  blue:"#2980b9", bluePl:"rgba(41,128,185,0.10)", blueBd:"rgba(41,128,185,0.22)",
+  purple:"#8e44ad", purplePl:"rgba(142,68,173,0.10)", purpleBd:"rgba(142,68,173,0.22)",
+  t1:"#1a2332", t2:"#4a5568", t3:"#9aa3b0",
+  border:"rgba(26,71,49,0.08)", border2:"rgba(26,71,49,0.14)",
+  mono:"'DM Mono', monospace", sans:"'Inter', sans-serif", disp:"'Syne', sans-serif",
+};
+
+const CSS = `
+  @keyframes cr-fadeUp    { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes cr-slideIn   { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes cr-drawerIn  { from{opacity:0;transform:translateX(36px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes cr-modalIn   { from{opacity:0;transform:scale(.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  @keyframes cr-overlayIn { from{opacity:0} to{opacity:1} }
+  @keyframes cr-blink     { 0%,100%{opacity:1} 50%{opacity:.3} }
+  @keyframes cr-mapDraw   { from{stroke-dashoffset:800} to{stroke-dashoffset:0} }
+  .cr-row          { transition:background .15s; cursor:pointer; }
+  .cr-row:hover td { background:rgba(46,204,113,.03) !important; }
+  .cr-row:hover .cr-arrow { opacity:1 !important; transform:translateX(0) !important; }
+  .cr-btn          { transition:all .18s; cursor:pointer; border:none; }
+  .cr-btn:hover    { filter:brightness(1.08); transform:translateY(-1px); }
+  .cr-tab          { transition:all .18s; cursor:pointer; background:none; border:none; }
+  .cr-tab:hover    { color:${T.greenD} !important; }
+  .cr-close:hover  { background:rgba(0,0,0,.07) !important; }
+  .cr-step.done    { border-color:${T.green} !important; background:${T.greenPl} !important; }
+  .cr-step.active  { border-color:${T.greenD} !important; background:${T.greenD} !important; color:#fff !important; }
+  .cr-section-tab  { transition:all .18s; cursor:pointer; border:none; background:none; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-thumb { background:#d1d9d1; border-radius:4px; }
+`;
+if (!document.querySelector("#cr-css2")) {
+  const s = document.createElement("style"); s.id = "cr-css2"; s.textContent = CSS;
+  document.head.appendChild(s);
+}
+
+
+const COURSES_DATA = [
+  {
+    id:"#1051", conducteurIni:"AK", conducteur:"Amadou Konaté", conducteurTel:"70 21 34 56",
+    client:"Fatoumata Sawadogo", clientTel:"76 44 11 22",
+    soldeClient:15000, soldeMinimum:500, clientPaye:true,
+    depart:"Secteur 22, Bobo", arrivee:"Aéroport de Bobo",
+    distance:"4.2 km", montant:1250, duree:"12 min",
+    statut:"en_cours", heure:"14:32", date:"06 mai 2025",
+    note:4.8, vitesse:42, progression:65,
+    modePaiement:null,
+    colis:{ description:"Téléphone portable Samsung", poids:"0.4 kg", dimensions:"16×8×1 cm", fragile:true, valeur:85000, instructions:"Manipuler avec soin, ne pas secouer" },
+    coords:[{x:.12,y:.55},{x:.25,y:.42},{x:.45,y:.38},{x:.62,y:.30},{x:.78,y:.25}],
+    timeline:[
+      {label:"Commande passée",   heure:"14:18", done:true},
+      {label:"Conducteur assigné",heure:"14:19", done:true},
+      {label:"Prise en charge",   heure:"14:24", done:true},
+      {label:"En route",          heure:"14:32", done:true, active:true},
+      {label:"Arrivée prévue",    heure:"14:44", done:false},
+    ],
+  },
+  {
+    id:"#1050", conducteurIni:"BD", conducteur:"Boubacar Diallo", conducteurTel:"65 77 88 99",
+    client:"Ibrahim Traoré", clientTel:"70 98 11 22",
+    soldeClient:2200, soldeMinimum:500, clientPaye:true,
+    depart:"Marché Central", arrivee:"CHU Souro Sanou",
+    distance:"2.8 km", montant:850, duree:"9 min",
+    statut:"en_cours", heure:"14:28", date:"06 mai 2025",
+    note:4.5, vitesse:38, progression:30,
+    modePaiement:null,
+    colis:{ description:"Médicaments ordonnance", poids:"0.2 kg", dimensions:"20×12×5 cm", fragile:false, valeur:12000, instructions:"Livrer uniquement au patient" },
+    coords:[{x:.15,y:.70},{x:.30,y:.60},{x:.42,y:.50}],
+    timeline:[
+      {label:"Commande passée",   heure:"14:20", done:true},
+      {label:"Conducteur assigné",heure:"14:21", done:true},
+      {label:"Prise en charge",   heure:"14:28", done:true, active:true},
+      {label:"En route",          heure:"—",     done:false},
+      {label:"Arrivée prévue",    heure:"14:37", done:false},
+    ],
+  },
+  {
+    id:"#1049", conducteurIni:"SC", conducteur:"Seydou Coulibaly", conducteurTel:"76 55 33 11",
+    client:"Mariam Ouédraogo", clientTel:"70 22 44 66",
+    soldeClient:0, soldeMinimum:500, clientPaye:false,
+    depart:"Université Polytechnique", arrivee:"Secteur 7, Bobo",
+    distance:"7.1 km", montant:2100, duree:"21 min",
+    statut:"annulée", heure:"14:15", date:"06 mai 2025",
+    note:null, vitesse:null, progression:null, modePaiement:null,
+    motifAnnulation:"Client introuvable à l'adresse indiquée",
+    colis:{ description:"Documents administratifs", poids:"0.1 kg", dimensions:"30×22×1 cm", fragile:false, valeur:0, instructions:"Remettre en mains propres uniquement" },
+    coords:null, // ✅ Pas de coords pour les courses annulées
+    timeline:[
+      {label:"Commande passée",   heure:"13:50", done:true},
+      {label:"Conducteur assigné",heure:"13:51", done:true},
+      {label:"Annulée",           heure:"14:15", done:true, active:true, error:true},
+    ],
+  },
+  {
+    id:"#1048", conducteurIni:"MY", conducteur:"Moussa Yara", conducteurTel:"70 12 99 88",
+    client:"Awa Barro", clientTel:"76 11 55 77",
+    soldeClient:8500, soldeMinimum:500, clientPaye:true,
+    depart:"Secteur 3, Bobo", arrivee:"Lycée Ouezzin Coulibaly",
+    distance:"3.5 km", montant:1050, duree:"11 min",
+    statut:"terminée", heure:"14:08", date:"06 mai 2025",
+    note:5.0, vitesse:null, progression:null, modePaiement:"mobile_money",
+    colis:{ description:"Repas chaud (3 plats)", poids:"1.8 kg", dimensions:"35×30×20 cm", fragile:true, valeur:6500, instructions:"Livrer chaud, ne pas retourner" },
+    // ✅ coords ajoutées pour les courses terminées — nécessaires pour la carte
+    coords:[{x:.10,y:.60},{x:.28,y:.48},{x:.50,y:.40},{x:.70,y:.32},{x:.85,y:.22}],
+    timeline:[
+      {label:"Commande passée",   heure:"13:54", done:true},
+      {label:"Conducteur assigné",heure:"13:55", done:true},
+      {label:"Prise en charge",   heure:"13:58", done:true},
+      {label:"En route",          heure:"14:00", done:true},
+      {label:"Terminée",          heure:"14:08", done:true, active:true},
+    ],
+  },
+  {
+    id:"#1047", conducteurIni:"OT", conducteur:"Oumar Traoré", conducteurTel:"65 44 22 00",
+    client:"Rokia Diallo", clientTel:"70 88 33 55",
+    soldeClient:3000, soldeMinimum:500, clientPaye:true,
+    depart:"Hôtel Ran", arrivee:"Gare routière Bobo",
+    distance:"1.9 km", montant:600, duree:"7 min",
+    statut:"litige", heure:"13:55", date:"06 mai 2025",
+    note:1.5, vitesse:null, progression:null, modePaiement:"especes",
+    motifLitige:"Le client conteste le montant facturé (route détournée)",
+    colis:{ description:"Sac à main + vêtements", poids:"2.3 kg", dimensions:"40×30×20 cm", fragile:false, valeur:35000, instructions:"—" },
+    coords:[{x:.20,y:.65},{x:.38,y:.55},{x:.55,y:.48},{x:.72,y:.38}],
+    timeline:[
+      {label:"Commande passée",   heure:"13:40", done:true},
+      {label:"Conducteur assigné",heure:"13:41", done:true},
+      {label:"Prise en charge",   heure:"13:45", done:true},
+      {label:"Terminée",          heure:"13:55", done:true},
+      {label:"Litige ouvert",     heure:"14:02", done:true, active:true, error:true},
+    ],
+  },
+  {
+    id:"#1046", conducteurIni:"KS", conducteur:"Karim Sanou", conducteurTel:"76 22 88 44",
+    client:"Salif Nikiema", clientTel:"70 66 11 33",
+    soldeClient:22000, soldeMinimum:500, clientPaye:true,
+    depart:"Secteur 15, Bobo", arrivee:"Secteur 28, Bobo",
+    distance:"5.6 km", montant:1680, duree:"17 min",
+    statut:"terminée", heure:"13:41", date:"06 mai 2025",
+    note:4.2, vitesse:null, progression:null, modePaiement:"en_ligne",
+    colis:{ description:"Pièces détachées moto", poids:"3.5 kg", dimensions:"45×30×15 cm", fragile:false, valeur:18000, instructions:"—" },
+    coords:[{x:.08,y:.70},{x:.25,y:.58},{x:.44,y:.44},{x:.65,y:.34},{x:.82,y:.28}],
+    timeline:[
+      {label:"Commande passée",   heure:"13:20", done:true},
+      {label:"Conducteur assigné",heure:"13:21", done:true},
+      {label:"Prise en charge",   heure:"13:24", done:true},
+      {label:"En route",          heure:"13:27", done:true},
+      {label:"Terminée",          heure:"13:41", done:true, active:true},
+    ],
+  },
+  {
+    id:"#1045", conducteurIni:"MB", conducteur:"Mamadou Barro", conducteurTel:"65 99 11 55",
+    client:"Aissata Koné", clientTel:"76 33 88 00",
+    soldeClient:500, soldeMinimum:500, clientPaye:true,
+    depart:"Place de la Nation", arrivee:"INSS Bobo",
+    distance:"8.3 km", montant:2490, duree:"24 min",
+    statut:"terminée", heure:"13:20", date:"06 mai 2025",
+    note:3.8, vitesse:null, progression:null, modePaiement:"especes",
+    colis:{ description:"Dossier médical + ordonnances", poids:"0.3 kg", dimensions:"30×22×3 cm", fragile:false, valeur:0, instructions:"Confidentiel — remettre en mains propres" },
+    coords:[{x:.05,y:.72},{x:.22,y:.60},{x:.42,y:.50},{x:.60,y:.38},{x:.80,y:.26}],
+    timeline:[
+      {label:"Commande passée",   heure:"12:52", done:true},
+      {label:"Conducteur assigné",heure:"12:53", done:true},
+      {label:"Prise en charge",   heure:"12:56", done:true},
+      {label:"En route",          heure:"13:00", done:true},
+      {label:"Terminée",          heure:"13:20", done:true, active:true},
+    ],
+  },
+  {
+    id:"#1044", conducteurIni:"YD", conducteur:"Yacouba Dao", conducteurTel:"70 77 44 22",
+    client:"Salimata Tall", clientTel:"76 55 99 11",
+    soldeClient:0, soldeMinimum:500, clientPaye:false,
+    depart:"Banque Atlantique", arrivee:"Résidence Accacia",
+    distance:"3.1 km", montant:930, duree:"10 min",
+    statut:"annulée", heure:"13:05", date:"06 mai 2025",
+    note:null, vitesse:null, progression:null, modePaiement:null,
+    motifAnnulation:"Conducteur annulé (retard excessif)",
+    colis:{ description:"Coursier administratif", poids:"0.5 kg", dimensions:"30×22×5 cm", fragile:false, valeur:0, instructions:"—" },
+    coords:null,
+    timeline:[
+      {label:"Commande passée",   heure:"12:50", done:true},
+      {label:"Conducteur assigné",heure:"12:51", done:true},
+      {label:"Annulée",           heure:"13:05", done:true, active:true, error:true},
+    ],
+  },
+];
+
+const STATUT_CFG = {
+  en_cours: { label:"En cours",  bg:T.bluePl,  bd:T.blueBd,  color:T.blue,   dot:T.blue  },
+  terminée: { label:"Terminée",  bg:T.greenPl, bd:T.greenBd, color:T.greenD, dot:T.green },
+  annulée:  { label:"Annulée",   bg:T.redPl,   bd:T.redBd,   color:T.red,    dot:T.red   },
+  litige:   { label:"Litige",    bg:T.amberPl, bd:T.amberBd, color:T.amber,  dot:T.amber },
+};
+
+const PAIEMENT_CFG = {
+  mobile_money: { label:"Mobile Money",     icon:"📱", bg:T.purplePl, bd:T.purpleBd, color:T.purple },
+  en_ligne:     { label:"Paiement en ligne",icon:"💳", bg:T.bluePl,   bd:T.blueBd,   color:T.blue   },
+  especes:      { label:"Espèces",          icon:"💵", bg:T.amberPl,  bd:T.amberBd,  color:T.amber  },
+};
+
+const AV_PAL = [
+  {bg:"rgba(46,204,113,.15)",  c:T.greenD},
+  {bg:"rgba(41,128,185,.15)",  c:T.blue  },
+  {bg:"rgba(240,165,0,.15)",   c:"#7a5200"},
+  {bg:"rgba(231,76,60,.15)",   c:T.red   },
+  {bg:"rgba(142,68,173,.15)",  c:T.purple},
+];
+const avColor = (s) => AV_PAL[s.charCodeAt(0) % AV_PAL.length];
+
+
+function Av({ ini, size=34 }) {
+  const p = avColor(ini);
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:"50%", flexShrink:0,
+      background:p.bg, color:p.c, border:`1.5px solid ${p.c}30`,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      fontSize:size*.34, fontWeight:700, fontFamily:T.mono,
+    }}>{ini}</div>
+  );
+}
+
+function Tag({ label, bg, bd, color, dot }) {
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:5, padding:"4px 11px", borderRadius:20,
+      fontSize:11, fontWeight:600, fontFamily:T.sans, background:bg, color, border:`1px solid ${bd}`,
+    }}>
+      {dot && <span style={{ width:6, height:6, borderRadius:"50%", background:dot, flexShrink:0, animation:dot===T.blue?"cr-blink 1.4s ease-in-out infinite":"none" }}/>}
+      {label}
+    </span>
+  );
+}
+
+function Stars({ note }) {
+  if (!note) return <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>—</span>;
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+      <span style={{ fontSize:12, color:T.amber }}>{"★".repeat(Math.round(note))}</span>
+      <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>{note.toFixed(1)}</span>
+    </div>
+  );
+}
+
+function SH({ title }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:12 }}>
+      <div style={{ width:3, height:14, borderRadius:2, background:T.green }}/>
+      <span style={{ fontFamily:T.disp, fontSize:13, fontWeight:700, color:T.t1, letterSpacing:.3 }}>{title}</span>
+    </div>
+  );
+}
+
+function InfoRow({ label, value, mono=false, color }) {
+  return (
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 0", borderBottom:`1px solid ${T.border}` }}>
+      <span style={{ fontFamily:T.sans, fontSize:12, color:T.t3 }}>{label}</span>
+      <span style={{ fontFamily:mono?T.mono:T.sans, fontSize:12, fontWeight:600, color:color||T.t1 }}>{value}</span>
+    </div>
+  );
+}
+
+
+function LiveMap({ course }) {
+  const W = 476, H = 220;
+
+  // ✅ FIX : si pas de coords, on affiche un placeholder propre
+  if (!course.coords || course.coords.length < 2) {
+    return (
+      <div style={{
+        height:H, borderRadius:12, overflow:"hidden",
+        background:"#e8f0e4", border:`1px solid ${T.border}`,
+        display:"flex", flexDirection:"column",
+        alignItems:"center", justifyContent:"center", gap:8,
+      }}>
+        <span style={{ fontSize:24, opacity:.4 }}>🗺️</span>
+        <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>Données GPS non disponibles</span>
+      </div>
+    );
+  }
+
+  const pts = course.coords.map(c => ({ x:c.x*W, y:c.y*H }));
+  const pathD = pts.map((p,i) => `${i===0?"M":"L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const progress = (course.progression||0) / 100;
+  const segIdx  = Math.min(Math.floor(progress*(pts.length-1)), pts.length-2);
+  const segProg = (progress*(pts.length-1)) - segIdx;
+  const mx = pts[segIdx]?.x + ((pts[segIdx+1]?.x||0) - (pts[segIdx]?.x||0))*segProg || 0;
+  const my = pts[segIdx]?.y + ((pts[segIdx+1]?.y||0) - (pts[segIdx]?.y||0))*segProg || 0;
+  const isLive = course.statut === "en_cours";
+  const routeColor = isLive ? T.blue : T.greenD;
+
+  return (
+    <div style={{ position:"relative", borderRadius:12, overflow:"hidden", background:"#e8f0e4", border:`1px solid ${T.border}` }}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{ display:"block" }}>
+        <rect width={W} height={H} fill="#e8f0e4"/>
+        {[...Array(7)].map((_,i) => <line key={`h${i}`} x1={0} y1={i*36} x2={W} y2={i*36} stroke="#d8e8d4" strokeWidth=".6"/>)}
+        {[...Array(14)].map((_,i) => <line key={`v${i}`} x1={i*36} y1={0} x2={i*36} y2={H} stroke="#d8e8d4" strokeWidth=".6"/>)}
+        <path d={`M0,${H*.5} L${W},${H*.5}`} stroke="#c8d8c4" strokeWidth="5" fill="none" opacity=".5"/>
+        <path d={`M${W*.35},0 L${W*.35},${H}`} stroke="#c8d8c4" strokeWidth="3" fill="none" opacity=".5"/>
+        <path d={`M${W*.7},0 L${W*.7},${H}`}  stroke="#c8d8c4" strokeWidth="5" fill="none" opacity=".5"/>
+        <path d={pathD} stroke={routeColor} strokeWidth="3.5" fill="none"
+          strokeLinecap="round" strokeLinejoin="round"
+          strokeDasharray="800" strokeDashoffset="800"
+          style={{ animation:"cr-mapDraw 1.4s ease forwards" }}
+        />
+        <circle cx={pts[0].x} cy={pts[0].y} r="7" fill={T.greenD} stroke="#fff" strokeWidth="2"/>
+        <text x={pts[0].x+10} y={pts[0].y+4} fill={T.t2} fontSize="9" fontFamily={T.mono}>Départ</text>
+        <circle cx={pts[pts.length-1].x} cy={pts[pts.length-1].y} r="7"
+          fill={isLive ? T.t3 : T.green} stroke="#fff" strokeWidth="2"/>
+        <text x={pts[pts.length-1].x+10} y={pts[pts.length-1].y+4} fill={T.t2} fontSize="9" fontFamily={T.mono}>Arrivée</text>
+        {isLive && (
+          <g transform={`translate(${mx},${my})`}>
+            <circle r="13" fill={T.blue} opacity=".18"/>
+            <circle r="7"  fill={T.blue} stroke="#fff" strokeWidth="2"/>
+            <text x="-5" y="4" fontSize="9" fill="#fff">🛵</text>
+          </g>
+        )}
+      </svg>
+      {isLive && (
+        <div style={{
+          position:"absolute", top:8, left:8, display:"flex", alignItems:"center", gap:6,
+          background:"rgba(255,255,255,.92)", borderRadius:7, padding:"3px 9px",
+          border:`1px solid ${T.blueBd}`,
+        }}>
+          <span style={{ width:6, height:6, borderRadius:"50%", background:T.blue, display:"inline-block", animation:"cr-blink 1.2s infinite" }}/>
+          <span style={{ fontFamily:T.mono, fontSize:10, color:T.blue, fontWeight:500 }}>LIVE — {course.vitesse} km/h</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Timeline({ steps }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column" }}>
+      {steps.map((step,i) => (
+        <div key={i} style={{ display:"flex", gap:12, position:"relative" }}>
+          {i < steps.length-1 && (
+            <div style={{ position:"absolute", left:11, top:24, bottom:-4, width:1.5, background:step.done?T.green:T.border2 }}/>
+          )}
+          <div className={`cr-step${step.active?" active":step.done?" done":""}`} style={{
+            width:24, height:24, borderRadius:"50%", flexShrink:0,
+            border:`2px solid ${T.border2}`, background:T.bg,
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:10, zIndex:1,
+            ...(step.error&&step.active ? { borderColor:T.red, background:T.redPl, color:T.red } : {}),
+          }}>
+            {step.done&&!step.active?"✓":step.active&&step.error?"!":step.active?"●":""}
+          </div>
+          <div style={{ paddingBottom:16, flex:1 }}>
+            <div style={{ fontFamily:T.sans, fontSize:13, fontWeight:step.active?600:500, color:step.active&&step.error?T.red:step.active?T.greenD:step.done?T.t1:T.t3 }}>{step.label}</div>
+            <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3, marginTop:2 }}>{step.heure}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProgressBar({ pct, color }) {
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+        <span style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>Progression trajet</span>
+        <span style={{ fontFamily:T.mono, fontSize:11, fontWeight:600, color }}>{pct}%</span>
+      </div>
+      <div style={{ height:6, borderRadius:6, background:T.border2, overflow:"hidden" }}>
+        <div style={{ height:"100%", borderRadius:6, width:`${pct}%`, background:`linear-gradient(90deg,${color},${color}99)`, boxShadow:`0 0 8px ${color}55`, transition:"width 1s ease" }}/>
+      </div>
+    </div>
+  );
+}
+
+function SoldeBlock({ course }) {
+  const suffisant = course.soldeClient >= course.soldeMinimum;
+  const paye      = course.clientPaye;
+  return (
+    <div style={{ background:paye?T.greenPl:T.redPl, border:`1.5px solid ${paye?T.greenBd:T.redBd}`, borderRadius:12, padding:"14px 16px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+        <div>
+          <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Solde du client</div>
+          <div style={{ fontFamily:T.mono, fontSize:26, fontWeight:600, color:suffisant?T.greenD:T.red, lineHeight:1 }}>{course.soldeClient.toLocaleString()} F</div>
+        </div>
+        <div style={{ width:40, height:40, borderRadius:"50%", background:paye?T.greenPl:T.redPl, border:`2px solid ${paye?T.green:T.red}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>
+          {paye ? "✓" : "✗"}
+        </div>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+        <Tag label={paye?"Paiement confirmé":"Non payé"} bg={paye?T.greenPl:T.redPl} bd={paye?T.greenBd:T.redBd} color={paye?T.greenD:T.red} dot={paye?T.green:T.red}/>
+        {!suffisant && <span style={{ fontFamily:T.mono, fontSize:10, color:T.red }}>Solde insuffisant (min. {course.soldeMinimum.toLocaleString()} F)</span>}
+      </div>
+    </div>
+  );
+}
+
+function PaiementBlock({ modePaiement, montant }) {
+  if (!modePaiement) return null;
+  const cfg = PAIEMENT_CFG[modePaiement] || {};
+  return (
+    <div style={{ background:cfg.bg, border:`1.5px solid ${cfg.bd}`, borderRadius:12, padding:"14px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+        <div style={{ width:42, height:42, borderRadius:10, background:"rgba(255,255,255,.7)", border:`1px solid ${cfg.bd}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{cfg.icon}</div>
+        <div>
+          <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:3 }}>Mode de paiement</div>
+          <div style={{ fontFamily:T.sans, fontSize:14, fontWeight:700, color:cfg.color }}>{cfg.label}</div>
+        </div>
+      </div>
+      <div style={{ textAlign:"right" }}>
+        <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:3 }}>Montant payé</div>
+        <div style={{ fontFamily:T.mono, fontSize:18, fontWeight:700, color:T.greenD }}>{montant.toLocaleString()} F</div>
+      </div>
+    </div>
+  );
+}
+
+function ColisModal({ course, onClose }) {
+  if (!course?.colis) return null;
+  const { colis } = course;
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(10,20,15,.5)", backdropFilter:"blur(4px)", zIndex:200, animation:"cr-overlayIn .22s ease both" }}/>
+      <div style={{ position:"fixed", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:440, background:T.bg1, borderRadius:20, boxShadow:"0 24px 64px rgba(10,20,15,.28)", zIndex:201, fontFamily:T.sans, animation:"cr-modalIn .28s cubic-bezier(.2,.8,.4,1) both", overflow:"hidden" }}>
+        <div style={{ background:`linear-gradient(135deg, ${T.greenD}, #2a6048)`, padding:"20px 22px 18px" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div>
+              <div style={{ fontFamily:T.mono, fontSize:10, color:"rgba(255,255,255,.6)", letterSpacing:1, textTransform:"uppercase", marginBottom:4 }}>Détail du colis — {course.id}</div>
+              <div style={{ fontFamily:T.disp, fontSize:16, fontWeight:700, color:"#fff" }}>{colis.description}</div>
+            </div>
+            <button onClick={onClose} style={{ width:32, height:32, borderRadius:8, background:"rgba(255,255,255,.15)", border:"1px solid rgba(255,255,255,.25)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#fff" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          {colis.fragile && (
+            <div style={{ marginTop:10, display:"inline-flex", alignItems:"center", gap:6, background:"rgba(231,76,60,.25)", border:"1px solid rgba(231,76,60,.4)", borderRadius:20, padding:"3px 10px" }}>
+              <span style={{ fontSize:12 }}>⚠️</span>
+              <span style={{ fontFamily:T.mono, fontSize:10, color:"#ffcdd2", fontWeight:600 }}>FRAGILE</span>
+            </div>
+          )}
+        </div>
+        <div style={{ padding:"20px 22px", display:"flex", flexDirection:"column", gap:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+            {[
+              { icon:"⚖️", label:"Poids",      val:colis.poids },
+              { icon:"📐", label:"Dimensions", val:colis.dimensions },
+              { icon:"💰", label:"Valeur décl.",val:colis.valeur > 0 ? `${colis.valeur.toLocaleString()} F` : "Non renseignée" },
+            ].map((item,i) => (
+              <div key={i} style={{ background:T.bg, borderRadius:10, padding:"10px 12px", border:`1px solid ${T.border}`, textAlign:"center" }}>
+                <div style={{ fontSize:18, marginBottom:4 }}>{item.icon}</div>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:.8, marginBottom:3 }}>{item.label}</div>
+                <div style={{ fontFamily:T.mono, fontSize:11, fontWeight:600, color:T.t1 }}>{item.val}</div>
+              </div>
+            ))}
+          </div>
+          {colis.instructions && colis.instructions !== "—" && (
+            <div style={{ background:T.amberPl, border:`1px solid ${T.amberBd}`, borderRadius:10, padding:"12px 14px" }}>
+              <div style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                <span style={{ fontSize:14, flexShrink:0 }}>📋</span>
+                <div>
+                  <div style={{ fontFamily:T.mono, fontSize:9, color:T.amber, textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Instructions de livraison</div>
+                  <div style={{ fontFamily:T.sans, fontSize:13, color:T.t1, lineHeight:1.5 }}>{colis.instructions}</div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div style={{ background:T.bg, borderRadius:10, padding:"12px 14px", border:`1px solid ${T.border}` }}>
+            <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>Itinéraire</div>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:T.greenD, flexShrink:0 }}/><span style={{ fontFamily:T.sans, fontSize:12, color:T.t1 }}>{course.depart}</span>
+            </div>
+            <div style={{ width:1.5, height:12, background:T.border2, marginLeft:3.5, marginBottom:5 }}/>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background:T.red, flexShrink:0 }}/><span style={{ fontFamily:T.sans, fontSize:12, color:T.t1 }}>{course.arrivee}</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="cr-btn" style={{ width:"100%", height:42, borderRadius:10, background:T.greenD, color:"#fff", fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center" }}>Fermer</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+
+function CourseDrawer({ course, onClose, onCancelCourse, onResolveLitige, onOpenColis }) {
+  const [drawerTab, setDrawerTab] = useState("apercu");
+  if (!course) return null;
+  const sc = STATUT_CFG[course.statut] || STATUT_CFG.terminée;
+  const isLive = course.statut === "en_cours";
+  // ✅ Afficher la carte uniquement si coords disponibles
+  const hasCoords = course.coords && course.coords.length >= 2;
+  const showMap   = (course.statut === "en_cours" || course.statut === "terminée") && hasCoords;
+
+  const DRAWER_TABS = [
+    { id:"apercu",   label:"Aperçu"    },
+    { id:"paiement", label:"Paiement"  },
+    { id:"timeline", label:"Historique"},
+  ];
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(10,20,15,.32)", backdropFilter:"blur(2px)", zIndex:99, animation:"cr-overlayIn .22s ease both" }}/>
+      <div style={{ position:"fixed", top:0, right:0, bottom:0, width:520, background:T.bg1, boxShadow:"-8px 0 48px rgba(10,20,15,.16)", zIndex:100, display:"flex", flexDirection:"column", animation:"cr-drawerIn .28s cubic-bezier(.2,.8,.4,1) both", fontFamily:T.sans }}>
+
+        
+        <div style={{ padding:"18px 22px 0", borderBottom:`1px solid ${T.border}`, flexShrink:0 }}>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:14 }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:5 }}>
+                <span style={{ fontFamily:T.mono, fontSize:13, fontWeight:600, color:T.t3 }}>{course.id}</span>
+                <Tag label={sc.label} bg={sc.bg} bd={sc.bd} color={sc.color} dot={sc.dot}/>
+              </div>
+              <div style={{ fontFamily:T.sans, fontSize:12, color:T.t2 }}>{course.date} · {course.heure}</div>
+            </div>
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <button className="cr-btn" onClick={() => onOpenColis(course)} style={{ display:"flex", alignItems:"center", gap:6, background:T.greenPl, border:`1.5px solid ${T.greenBd}`, borderRadius:9, padding:"7px 12px", color:T.greenD, fontFamily:T.sans, fontSize:12, fontWeight:600 }}>
+                <span style={{ fontSize:13 }}>📦</span>Détail colis
+              </button>
+              <button className="cr-close" onClick={onClose} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${T.border}`, background:"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:T.t2, transition:"background .15s" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:0 }}>
+            {DRAWER_TABS.map(tab => {
+              const active = drawerTab === tab.id;
+              return (
+                <button key={tab.id} className="cr-section-tab" onClick={() => setDrawerTab(tab.id)} style={{ padding:"8px 16px", borderBottom:active?`2px solid ${T.greenD}`:"2px solid transparent", marginBottom:-1, color:active?T.greenD:T.t3, fontWeight:active?700:400, fontFamily:T.sans, fontSize:12 }}>
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+       
+        <div style={{ flex:1, overflowY:"auto", padding:"18px 22px", display:"flex", flexDirection:"column", gap:16 }}>
+
+          {drawerTab === "apercu" && (<>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              
+              <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 14px" }}>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Conducteur</div>
+                <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:10 }}>
+                  <Av ini={course.conducteurIni} size={36}/>
+                  <div>
+                    <div style={{ fontFamily:T.sans, fontSize:13, fontWeight:600, color:T.t1 }}>{course.conducteur}</div>
+                    <div style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>{course.conducteurTel}</div>
+                  </div>
+                </div>
+                <a href={`tel:+226${course.conducteurTel.replace(/\s/g,"")}`} className="cr-btn" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, background:T.bluePl, border:`1px solid ${T.blueBd}`, borderRadius:8, padding:"7px 0", width:"100%", color:T.blue, fontFamily:T.sans, fontSize:12, fontWeight:600, textDecoration:"none" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.07a16 16 0 006.02 6.02l1.43-1.43a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 13.92z"/></svg>
+                  Appeler
+                </a>
+              </div>
+              
+              <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 14px" }}>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Client</div>
+                <div style={{ marginBottom:10 }}>
+                  <div style={{ fontFamily:T.sans, fontSize:13, fontWeight:600, color:T.t1, marginBottom:2 }}>{course.client}</div>
+                  <div style={{ fontFamily:T.mono, fontSize:11, color:T.t3, marginBottom:4 }}>{course.clientTel}</div>
+                  {course.note && <Stars note={course.note}/>}
+                </div>
+                <a href={`tel:+226${course.clientTel.replace(/\s/g,"")}`} className="cr-btn" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, background:T.greenPl, border:`1px solid ${T.greenBd}`, borderRadius:8, padding:"7px 0", width:"100%", color:T.greenD, fontFamily:T.sans, fontSize:12, fontWeight:600, textDecoration:"none" }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.07a16 16 0 006.02 6.02l1.43-1.43a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 13.92z"/></svg>
+                  Appeler
+                </a>
+              </div>
+            </div>
+
+            
+            <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:10 }}>Trajet</div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:T.greenD, flexShrink:0 }}/><span style={{ fontFamily:T.sans, fontSize:12, color:T.t1 }}>{course.depart}</span>
+              </div>
+              <div style={{ width:1.5, height:12, background:T.border2, marginLeft:3.5, marginBottom:5 }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:T.red, flexShrink:0 }}/><span style={{ fontFamily:T.sans, fontSize:12, color:T.t1 }}>{course.arrivee}</span>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+                {[{label:"Distance",val:course.distance},{label:"Durée",val:course.duree},{label:"Montant",val:`${course.montant.toLocaleString()} F`}].map((m,i) => (
+                  <div key={i} style={{ textAlign:"center" }}>
+                    <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:.8 }}>{m.label}</div>
+                    <div style={{ fontFamily:T.mono, fontSize:14, fontWeight:600, color:T.t1, marginTop:3 }}>{m.val}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            
+            {showMap && (
+              <div>
+                <SH title={isLive ? "Suivi en temps réel 🔴" : "Carte du trajet"}/>
+                {isLive && course.progression && <div style={{ marginBottom:8 }}><ProgressBar pct={course.progression} color={T.blue}/></div>}
+                <LiveMap course={course}/>
+              </div>
+            )}
+
+            {course.statut==="annulée" && course.motifAnnulation && (
+              <div style={{ background:T.redPl, border:`1px solid ${T.redBd}`, borderRadius:12, padding:"12px 14px" }}>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.red, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Motif d'annulation</div>
+                <div style={{ fontFamily:T.sans, fontSize:13, color:T.t1 }}>{course.motifAnnulation}</div>
+              </div>
+            )}
+            {course.statut==="litige" && course.motifLitige && (
+              <div style={{ background:T.amberPl, border:`1px solid ${T.amberBd}`, borderRadius:12, padding:"12px 14px" }}>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.amber, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Motif du litige</div>
+                <div style={{ fontFamily:T.sans, fontSize:13, color:T.t1 }}>{course.motifLitige}</div>
+              </div>
+            )}
+          </>)}
+
+          {drawerTab === "paiement" && (<>
+            <SoldeBlock course={course}/>
+            {course.statut === "terminée" && course.modePaiement && <PaiementBlock modePaiement={course.modePaiement} montant={course.montant}/>}
+            <div style={{ background:T.bg, border:`1px solid ${T.border}`, borderRadius:12, padding:"14px 16px" }}>
+              <SH title="Résumé financier"/>
+              <InfoRow label="Montant de la course"  value={`${course.montant.toLocaleString()} F`} mono color={T.greenD}/>
+              <InfoRow label="Frais de service (5%)" value={`${Math.round(course.montant*.05).toLocaleString()} F`} mono color={T.t2}/>
+              <InfoRow label="Part conducteur (95%)" value={`${Math.round(course.montant*.95).toLocaleString()} F`} mono color={T.t1}/>
+              <div style={{ marginTop:8, paddingTop:8, borderTop:`2px solid ${T.greenBd}` }}>
+                <div style={{ display:"flex", justifyContent:"space-between" }}>
+                  <span style={{ fontFamily:T.sans, fontSize:13, fontWeight:700, color:T.t1 }}>Total encaissé</span>
+                  <span style={{ fontFamily:T.mono, fontSize:14, fontWeight:700, color:T.greenD }}>{course.montant.toLocaleString()} F</span>
+                </div>
+              </div>
+            </div>
+            {!course.clientPaye && (
+              <div style={{ background:T.redPl, border:`1px solid ${T.redBd}`, borderRadius:12, padding:"12px 14px" }}>
+                <div style={{ display:"flex", gap:8 }}>
+                  <span style={{ fontSize:16 }}>🚨</span>
+                  <div>
+                    <div style={{ fontFamily:T.sans, fontSize:13, fontWeight:600, color:T.red, marginBottom:3 }}>Paiement non effectué</div>
+                    <div style={{ fontFamily:T.sans, fontSize:12, color:T.t2 }}>Solde actuel : <strong>{course.soldeClient.toLocaleString()} F</strong></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>)}
+
+          {drawerTab === "timeline" && (
+            <div><SH title="Historique de la course"/><Timeline steps={course.timeline}/></div>
+          )}
+        </div>
+
+       
+        <div style={{ padding:"14px 22px", borderTop:`1px solid ${T.border}`, display:"flex", gap:10, flexShrink:0 }}>
+          {isLive && (
+            <button className="cr-btn" onClick={() => { onCancelCourse(course.id); onClose(); }} style={{ flex:1, height:42, borderRadius:10, background:T.redPl, color:T.red, border:`1.5px solid ${T.redBd}`, fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Annuler la course
+            </button>
+          )}
+          {course.statut === "litige" && (
+            <button className="cr-btn" onClick={() => { onResolveLitige(course.id); onClose(); }} style={{ flex:1, height:42, borderRadius:10, background:T.greenD, color:"#fff", fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+              Résoudre le litige
+            </button>
+          )}
+          {(course.statut==="terminée"||course.statut==="annulée") && (
+            <button className="cr-btn" style={{ flex:1, height:42, borderRadius:10, background:T.bg, color:T.t2, border:`1px solid ${T.border2}`, fontFamily:T.sans, fontSize:13, fontWeight:600, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter le reçu
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+
+const TABS = ["Toutes","En cours","Terminées","Annulées","Litiges"];
+
+export default function CoursesManagementPage() {
+  const [activeTab, setActiveTab] = useState("Toutes");
+  const [search,    setSearch]    = useState("");
+  const [selected,  setSelected]  = useState(null);
+  const [colisFor,  setColisFor]  = useState(null);
+  const [courses,   setCourses]   = useState(COURSES_DATA);
+  const [notif,     setNotif]     = useState(null);
+
+  const showNotif = (msg) => { setNotif(msg); setTimeout(() => setNotif(null), 3200); };
+  const handleCancel  = (id) => { setCourses(p => p.map(c => c.id===id ? { ...c, statut:"annulée", motifAnnulation:"Annulée par l'administrateur", coords:null } : c)); showNotif("✓ Course annulée avec succès"); };
+  const handleResolve = (id) => { setCourses(p => p.map(c => c.id===id ? { ...c, statut:"terminée" } : c)); showNotif("✓ Litige résolu — course marquée terminée"); };
+
+  const tabStatut = { "En cours":"en_cours","Terminées":"terminée","Annulées":"annulée","Litiges":"litige" };
+  const filtered = courses.filter(c => {
+    const matchTab = activeTab==="Toutes" || c.statut===tabStatut[activeTab];
+    const q = search.toLowerCase();
+    return matchTab && (!q || c.conducteur.toLowerCase().includes(q) || c.client.toLowerCase().includes(q) || c.id.includes(q));
+  });
+
+  const counts = { "Toutes":courses.length, "En cours":courses.filter(c=>c.statut==="en_cours").length, "Terminées":courses.filter(c=>c.statut==="terminée").length, "Annulées":courses.filter(c=>c.statut==="annulée").length, "Litiges":courses.filter(c=>c.statut==="litige").length };
+  const tabColor = (tab) => tab==="En cours"?T.blue:tab==="Terminées"?T.greenD:tab==="Annulées"?T.red:tab==="Litiges"?T.amber:T.greenD;
+
+  return (
+    <div style={{ flex:1, overflowY:"auto", background:T.bg, padding:"26px 28px", display:"flex", flexDirection:"column", gap:18, fontFamily:T.sans }}>
+
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:3, height:20, borderRadius:2, background:T.green }}/>
+          <span style={{ fontFamily:T.disp, fontSize:17, fontWeight:800, color:T.t1, letterSpacing:-.2 }}>Gestion des courses</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, background:T.bg1, border:`1px solid ${T.border}`, borderRadius:10, padding:"7px 14px" }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke={T.t3} strokeWidth="2" width="13" height="13"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ID, conducteur, client..." style={{ border:"none", outline:"none", background:"transparent", fontFamily:T.sans, fontSize:13, color:T.t1, width:200 }}/>
+        </div>
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,minmax(0,1fr))", gap:12 }}>
+        {[ {label:"En cours",val:counts["En cours"],accent:T.blue,pl:T.bluePl}, {label:"Terminées",val:counts["Terminées"],accent:T.green,pl:T.greenPl}, {label:"Annulées",val:counts["Annulées"],accent:T.red,pl:T.redPl}, {label:"Litiges",val:counts["Litiges"],accent:T.amber,pl:T.amberPl} ].map((k,i) => (
+          <div key={i} onClick={() => setActiveTab(Object.keys(counts)[i+1])} style={{ background:T.bg1, border:`1px solid ${T.border}`, borderRadius:14, padding:"14px 18px", boxShadow:"0 2px 8px rgba(26,71,49,.06)", position:"relative", overflow:"hidden", cursor:"pointer", animation:`cr-fadeUp .4s ease ${i*65}ms both`, transition:"transform .2s, box-shadow .2s" }}
+          onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(26,71,49,.12)"; }}
+          onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 8px rgba(26,71,49,.06)"; }}>
+            <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg,${k.accent},${k.accent}44)` }}/>
+            <div style={{ fontFamily:T.mono, fontSize:9, color:T.t3, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>{k.label}</div>
+            <div style={{ fontFamily:T.mono, fontSize:30, fontWeight:500, color:k.accent, lineHeight:1 }}>{k.val}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:"flex", gap:0, borderBottom:`2px solid ${T.border}` }}>
+        {TABS.map(tab => {
+          const active = activeTab===tab;
+          return (
+            <button key={tab} className="cr-tab" onClick={() => setActiveTab(tab)} style={{ padding:"10px 20px", borderBottom:active?`2px solid ${tabColor(tab)}`:"2px solid transparent", marginBottom:-2, color:active?tabColor(tab):T.t3, fontWeight:active?700:400, fontFamily:T.sans, fontSize:13, display:"flex", alignItems:"center", gap:7 }}>
+              {tab}
+              <span style={{ fontFamily:T.mono, fontSize:10, background:active?`${tabColor(tab)}15`:"rgba(0,0,0,.04)", color:active?tabColor(tab):T.t3, border:active?`1px solid ${tabColor(tab)}33`:"1px solid transparent", borderRadius:20, padding:"1px 7px" }}>{counts[tab]}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ background:T.bg1, border:`1px solid ${T.border}`, borderRadius:16, boxShadow:"0 2px 12px rgba(26,71,49,.06)", overflow:"hidden", animation:"cr-fadeUp .45s ease .2s both" }}>
+        <div style={{ overflowX:"auto" }}>
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+            <thead>
+              <tr style={{ background:"#fafbfc" }}>
+                {["Course","Conducteur","Client","Trajet","Distance","Durée","Montant","Note","Paiement","Statut"].map(col => (
+                  <th key={col} style={{ padding:"11px 14px", textAlign:"left", fontSize:10, fontFamily:T.mono, color:T.t3, fontWeight:500, textTransform:"uppercase", letterSpacing:.9, borderBottom:`1.5px solid ${T.border2}`, whiteSpace:"nowrap" }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c,i) => {
+                const sc = STATUT_CFG[c.statut] || STATUT_CFG.terminée;
+                const pc = c.modePaiement ? PAIEMENT_CFG[c.modePaiement] : null;
+                return (
+                  <tr key={c.id} className="cr-row" onClick={() => setSelected(c)} style={{ borderBottom:`1px solid ${T.border}`, animation:`cr-slideIn .4s ease ${i*50}ms both` }}>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:T.t1 }}>{c.id}</div>
+                      <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3, marginTop:2 }}>{c.heure}</div>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <Av ini={c.conducteurIni} size={28}/>
+                        <div>
+                          <div style={{ fontFamily:T.sans, fontWeight:500, color:T.t1, whiteSpace:"nowrap", fontSize:12 }}>{c.conducteur}</div>
+                          <div style={{ fontFamily:T.mono, fontSize:10, color:T.t3 }}>{c.conducteurTel}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ whiteSpace:"nowrap", fontSize:12, color:T.t1 }}>{c.client}</div>
+                      <div style={{ fontFamily:T.mono, fontSize:10, color:c.clientPaye?T.greenD:T.red, marginTop:2, fontWeight:600 }}>{c.clientPaye?"✓ Payé":"✗ Non payé"}</div>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle", maxWidth:150 }}>
+                      <div style={{ fontSize:11, color:T.t2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}><span style={{ color:T.greenD, fontWeight:600 }}>▲</span> {c.depart}</div>
+                      <div style={{ fontSize:11, color:T.t2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", marginTop:2 }}><span style={{ color:T.red, fontWeight:600 }}>▼</span> {c.arrivee}</div>
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}><span style={{ fontFamily:T.mono, fontSize:12, color:T.t1 }}>{c.distance}</span></td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}><span style={{ fontFamily:T.mono, fontSize:12, color:T.t2 }}>{c.duree}</span></td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}><span style={{ fontFamily:T.mono, fontSize:13, fontWeight:600, color:T.greenD }}>{c.montant.toLocaleString()} F</span></td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}><Stars note={c.note}/></td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      {pc ? <span style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"3px 9px", borderRadius:20, fontSize:11, fontWeight:600, background:pc.bg, color:pc.color, border:`1px solid ${pc.bd}` }}>{pc.icon} {pc.label}</span> : <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>—</span>}
+                    </td>
+                    <td style={{ padding:"12px 14px", verticalAlign:"middle" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        <Tag label={sc.label} bg={sc.bg} bd={sc.bd} color={sc.color} dot={sc.dot}/>
+                        <div className="cr-arrow" style={{ color:T.t3, opacity:0, transform:"translateX(-5px)", transition:"all .18s" }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && <tr><td colSpan={10} style={{ padding:56, textAlign:"center", color:T.t3, fontFamily:T.sans }}>Aucune course trouvée</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding:"11px 16px", borderTop:`1px solid ${T.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <span style={{ fontFamily:T.mono, fontSize:11, color:T.t3 }}>{filtered.length} course{filtered.length>1?"s":""} affichée{filtered.length>1?"s":""}</span>
+          <div style={{ display:"flex", gap:6 }}>
+            {["‹","1","2","3","›"].map((item,i) => <button key={i} style={{ width:28, height:28, borderRadius:7, border:`1px solid ${T.border2}`, background:i===1?T.greenD:"transparent", color:i===1?"#fff":T.t2, fontFamily:T.mono, fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>{item}</button>)}
+          </div>
+        </div>
+      </div>
+
+      {selected && <CourseDrawer course={courses.find(c=>c.id===selected.id)} onClose={() => setSelected(null)} onCancelCourse={handleCancel} onResolveLitige={handleResolve} onOpenColis={(c) => setColisFor(c)}/>}
+      {colisFor && <ColisModal course={colisFor} onClose={() => setColisFor(null)}/>}
+      {notif && <div style={{ position:"fixed", bottom:28, left:"50%", transform:"translateX(-50%)", background:T.greenD, color:"#fff", borderRadius:10, padding:"11px 22px", fontFamily:T.sans, fontSize:13, fontWeight:500, boxShadow:"0 8px 24px rgba(26,71,49,.25)", zIndex:300, animation:"cr-fadeUp .3s ease both" }}>{notif}</div>}
+    </div>
+  );
+}*/

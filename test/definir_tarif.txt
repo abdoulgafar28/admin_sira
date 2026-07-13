@@ -1,0 +1,396 @@
+import { useState, useEffect } from "react";
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, InputAdornment, Typography,
+  Divider, Switch, FormControlLabel, Box, Grid,
+  Paper, Slide, IconButton, Tooltip,
+} from "@mui/material";
+import {
+  TuneRounded, CheckCircleOutline, VisibilityOutlined,
+  AddCircleOutline, RemoveCircleOutline,
+} from "@mui/icons-material";
+
+// ── Transitions ───────────────────────────────────────────────────────────────
+const SlideUp   = (props) => <Slide direction="up"   {...props} />;
+const SlideLeft = (props) => <Slide direction="left" {...props} />;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = (n) => Math.round(n).toLocaleString("fr-FR") + " FCFA";
+
+function SectionLabel({ children }) {
+  return (
+    <Typography sx={{
+      fontSize: 11, fontWeight: 600, color: "text.disabled",
+      letterSpacing: "0.07em", textTransform: "uppercase", mb: 1.5,
+    }}>
+      {children}
+    </Typography>
+  );
+}
+
+function AmountField({ label, id, value, onChange, unit, step = 50, min = 0 }) {
+  return (
+    <TextField
+      label={label} type="number" value={value}
+      onChange={(e) => onChange(id, e.target.value)}
+      size="small" fullWidth inputProps={{ step, min }}
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <Typography sx={{ fontSize: 11, color: "text.disabled" }}>{unit}</Typography>
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        "& .MuiOutlinedInput-root": { borderRadius: 2, fontSize: 13 },
+        "& .MuiInputLabel-root": { fontSize: 13 },
+      }}
+    />
+  );
+}
+
+function CoursePreview({ tarifs }) {
+  const dist = 5;
+  const base = parseFloat(tarifs.fraisBase) || 0;
+  const km   = parseFloat(tarifs.prixKm)    || 0;
+  const total = base + km * dist;
+  const rows = [
+    { label: "Frais de base",         value: fmt(base) },
+    { label: `Distance (${dist} km)`, value: fmt(km * dist) },
+  ];
+  return (
+    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden", border: "0.5px solid", borderColor: "divider" }}>
+      {rows.map((r) => (
+        <Box key={r.label} sx={{ display: "flex", justifyContent: "space-between", px: 1.75, py: 1, borderBottom: "0.5px solid", borderColor: "divider" }}>
+          <Typography sx={{ fontSize: 12.5, color: "text.secondary" }}>{r.label}</Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 500 }}>{r.value}</Typography>
+        </Box>
+      ))}
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 1.75, py: 1, background: "#eaf3de" }}>
+        <Typography sx={{ fontSize: 12.5, color: "#3b6d11", fontWeight: 500 }}>Total estimé</Typography>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#27500a" }}>{fmt(total)}</Typography>
+      </Box>
+    </Paper>
+  );
+}
+
+// ── Icône moto ────────────────────────────────────────────────────────────────
+function MotoIcon() {
+  return (
+    <svg viewBox="0 0 32 32" width="26" height="26" fill="none" stroke="#1a4731" strokeWidth="1.8">
+      <circle cx="7"  cy="22" r="4"/>
+      <circle cx="25" cy="22" r="4"/>
+      <path d="M19 8h4l4 8M11 22h8l4-8h-7l-3-6H9"/>
+      <path d="M5 13h6"/>
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TarifClientDialog — vue client (fidèle à l'image)
+// ─────────────────────────────────────────────────────────────────────────────
+function TarifClientDialog({ open, onClose, tranches }) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      TransitionComponent={SlideLeft}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{ sx: { borderRadius: 3, mx: 2 } }}
+    >
+      <DialogContent sx={{ pt: 3, pb: 1, px: 3 }}>
+        {/* En-tête */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.75 }}>
+          <Box sx={{
+            width: 38, height: 38, borderRadius: "50%",
+            background: "#eaf3de", display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1a4731" strokeWidth="2.2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </Box>
+          <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#1a4731" }}>Tarification</Typography>
+        </Box>
+
+        <Typography sx={{ fontSize: 14, color: "text.secondary", mb: 2.5, lineHeight: 1.5 }}>
+          de la distance et du type de livraison :
+        </Typography>
+
+        {/* Cartes de tranches */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          {tranches.map((t, i) => (
+            <Paper
+              key={i}
+              variant="outlined"
+              sx={{
+                borderRadius: 3, p: 1.75,
+                display: "flex", alignItems: "center", gap: 2,
+                border: "1px solid #e8ecf0",
+                background: "#fafafa",
+              }}
+            >
+              <Box sx={{
+                width: 54, height: 54, borderRadius: 2,
+                background: "#e1f5ee", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <MotoIcon />
+              </Box>
+
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#1a2332" }}>
+                  Livraison Standard
+                </Typography>
+                <Typography sx={{ fontSize: 12.5, color: "text.secondary", mt: 0.25 }}>
+                  {t.min}-{t.max} km
+                </Typography>
+              </Box>
+
+              <Typography sx={{ fontSize: 16, fontWeight: 800, color: "#1a4731", flexShrink: 0 }}>
+                {Math.round(t.prix).toLocaleString("fr-FR")} FCFA
+              </Typography>
+            </Paper>
+          ))}
+        </Box>
+
+        {/* Note */}
+        <Box sx={{
+          mt: 2.5, mb: 1, borderRadius: 2.5,
+          background: "#eaf3de", border: "1px solid #c0dd97",
+          p: 1.75, display: "flex", alignItems: "center", gap: 1.5,
+        }}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#3b6d11" strokeWidth="2" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8"  x2="12" y2="8"/>
+            <line x1="12" y1="11" x2="12" y2="16"/>
+          </svg>
+          <Typography sx={{ fontSize: 13, color: "#3b6d11", lineHeight: 1.4 }}>
+            Les tarifs peuvent varier selon le poids et la nature du colis
+          </Typography>
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 2.5, pt: 0.5 }}>
+        <Button
+          onClick={onClose}
+          sx={{ textTransform: "none", fontSize: 15, color: "#1a4731", fontWeight: 600 }}
+        >
+          Fermer
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DefinirTarifsDialog — vue admin
+// ─────────────────────────────────────────────────────────────────────────────
+const DEFAULT_TARIFS = {
+  prixKm:         "350",
+  fraisBase:      "500",
+  tarifMin:       "1000",
+  fraisAnnul:     "200",
+  majPointe:      "20",
+  majNuit:        "30",
+  tarifDynamique: true,
+  arrondissement: false,
+};
+
+const DEFAULT_TRANCHES = [
+  { min: 0,  max: 5,  prix: 750  },
+  { min: 5,  max: 10, prix: 1250 },
+  { min: 10, max: 15, prix: 1750 },
+  { min: 15, max: 20, prix: 2250 },
+];
+
+export default function DefinirTarifsDialog({ open, onClose }) {
+  const [tarifs,   setTarifs]   = useState(DEFAULT_TARIFS);
+  const [tranches, setTranches] = useState(DEFAULT_TRANCHES);
+  const [saved,    setSaved]    = useState(false);
+  const [preview,  setPreview]  = useState(false);
+
+  useEffect(() => { if (open) setSaved(false); }, [open]);
+
+  const handleChange  = (field, value) => setTarifs((p) => ({ ...p, [field]: value }));
+  const handleToggle  = (field)        => setTarifs((p) => ({ ...p, [field]: !p[field] }));
+  const handleTranche = (i, field, val) =>
+    setTranches((p) => p.map((t, idx) => idx === i ? { ...t, [field]: parseFloat(val) || 0 } : t));
+  const addTranche = () => {
+    const last = tranches[tranches.length - 1];
+    setTranches((p) => [...p, { min: last.max, max: last.max + 5, prix: last.prix + 500 }]);
+  };
+  const removeTranche = (i) => setTranches((p) => p.filter((_, idx) => idx !== i));
+
+  const handleSave = () => {
+    // TODO: PATCH /api/admin/tarifs  { tarifs, tranches }
+    console.log("Tarifs :", tarifs);
+    console.log("Tranches :", tranches);
+    setSaved(true);
+    setTimeout(() => { setSaved(false); onClose(); }, 1500);
+  };
+
+  return (
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        TransitionComponent={SlideUp}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, overflow: "hidden" } }}
+      >
+        {/* Header */}
+        <DialogTitle sx={{
+          display: "flex", alignItems: "center", gap: 1.5,
+          borderBottom: "1px solid", borderColor: "divider",
+          pb: 2, fontSize: 16, fontWeight: 700, color: "#1a2332",
+        }}>
+          <Box sx={{ width: 32, height: 32, borderRadius: 1.5, background: "#eaf3de", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <TuneRounded sx={{ fontSize: 17, color: "#3b6d11" }} />
+          </Box>
+          Définir les tarifs
+
+          {/* Bouton aperçu vue client */}
+          <Tooltip title="Aperçu vue client">
+            <IconButton
+              onClick={() => setPreview(true)}
+              size="small"
+              sx={{
+                ml: "auto", color: "#1a4731",
+                border: "1px solid #c0dd97", borderRadius: 1.5, background: "#eaf3de",
+                "&:hover": { background: "#c0dd97" },
+              }}
+            >
+              <VisibilityOutlined sx={{ fontSize: 17 }} />
+            </IconButton>
+          </Tooltip>
+        </DialogTitle>
+
+        {/* Body */}
+        <DialogContent sx={{ pt: 2.5, pb: 1, display: "flex", flexDirection: "column", gap: 2.5 }}>
+
+          {/* Tarification kilométrique */}
+          
+
+          <Divider />
+
+          {/* Tranches par distance */}
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+              <SectionLabel>Tranches par distance (vue client)</SectionLabel>
+              <Tooltip title="Ajouter une tranche">
+                <IconButton size="small" onClick={addTranche} sx={{ color: "#1a4731" }}>
+                  <AddCircleOutline sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {tranches.map((t, i) => (
+                <Paper
+                  key={i}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2, p: 1.25,
+                    display: "flex", alignItems: "center", gap: 1.25,
+                    border: "0.5px solid", borderColor: "divider",
+                  }}
+                >
+                  <Box sx={{ background: "#eaf3de", borderRadius: 1.5, px: 1, py: 0.5, minWidth: 64, textAlign: "center", flexShrink: 0 }}>
+                    <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#27500a" }}>
+                      {t.min}–{t.max} km
+                    </Typography>
+                  </Box>
+
+                  <TextField
+                    label="De (km)" type="number" value={t.min} size="small"
+                    onChange={(e) => handleTranche(i, "min", e.target.value)}
+                    inputProps={{ min: 0, step: 1 }}
+                    sx={{ width: 80, "& .MuiOutlinedInput-root": { borderRadius: 1.5, fontSize: 12 }, "& .MuiInputLabel-root": { fontSize: 12 } }}
+                  />
+                  <TextField
+                    label="À (km)" type="number" value={t.max} size="small"
+                    onChange={(e) => handleTranche(i, "max", e.target.value)}
+                    inputProps={{ min: 0, step: 1 }}
+                    sx={{ width: 80, "& .MuiOutlinedInput-root": { borderRadius: 1.5, fontSize: 12 }, "& .MuiInputLabel-root": { fontSize: 12 } }}
+                  />
+                  <TextField
+                    label="Prix fixe" type="number" value={t.prix} size="small"
+                    onChange={(e) => handleTranche(i, "prix", e.target.value)}
+                    inputProps={{ min: 0, step: 50 }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Typography sx={{ fontSize: 10, color: "text.disabled" }}>FCFA</Typography>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{ flex: 1, "& .MuiOutlinedInput-root": { borderRadius: 1.5, fontSize: 12 }, "& .MuiInputLabel-root": { fontSize: 12 } }}
+                  />
+                  <Tooltip title="Supprimer">
+                    <span>
+                      <IconButton
+                        size="small"
+                        disabled={tranches.length <= 1}
+                        onClick={() => removeTranche(i)}
+                        sx={{ color: tranches.length <= 1 ? "text.disabled" : "#e24b4a" }}
+                      >
+                        <RemoveCircleOutline sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Paper>
+              ))}
+            </Box>
+          </Box>
+
+          
+
+          {/* Majorations */}
+          
+
+          
+
+          {/* Options */}
+          
+
+          
+
+          {/* Aperçu course */}
+          
+
+        </DialogContent>
+
+        {/* Footer */}
+        <DialogActions sx={{ px: 3, py: 2, borderTop: "1px solid", borderColor: "divider", gap: 1 }}>
+          <Button
+            onClick={onClose} variant="outlined" size="small"
+            sx={{ borderRadius: 2, textTransform: "none", fontSize: 13, color: "text.secondary", borderColor: "divider" }}
+          >
+            Annuler
+          </Button>
+          <Button
+            onClick={handleSave} variant="contained" size="small"
+            startIcon={saved ? <CheckCircleOutline sx={{ fontSize: 16 }} /> : null}
+            sx={{
+              borderRadius: 2, textTransform: "none", fontSize: 13,
+              background: saved ? "#27500a" : "#1a4731",
+              "&:hover": { background: "#0f2d1e" },
+              minWidth: 160, transition: "background 0.3s",
+            }}
+          >
+            {saved ? "Enregistré !" : "Enregistrer les tarifs"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <TarifClientDialog
+        open={preview}
+        onClose={() => setPreview(false)}
+        tranches={tranches}
+      />
+    </>
+  );
+}
