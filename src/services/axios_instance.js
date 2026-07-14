@@ -2,7 +2,11 @@
 
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000/api/v1";
+//const BASE_URL = "http://localhost:8000/api/v1";
+
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:8000/api/v1" 
+  : "https://sirabackend-pc8j.onrender.com/api/v1";
 
 /* ─── Instance principale ─────────────────────────────────────────── */
 const API = axios.create({
