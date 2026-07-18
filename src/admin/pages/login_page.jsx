@@ -377,7 +377,16 @@ function LoginPage() {
         navigate('/dashboard');
       }
     } catch (err) {
-      setMsg({ type:'error', text: err.response?.data?.detail || 'Identifiants incorrects.' });
+      console.error('❌ Login error:', err);
+      let errorMsg = 'Identifiants incorrects ou serveur injoignable.';
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (data.detail) errorMsg = data.detail;
+        else if (data.errors?.detail) errorMsg = data.errors.detail;
+        else if (data.errors) errorMsg = Object.values(data.errors).flat().join(' — ');
+        else if (data.message) errorMsg = data.message;
+      }
+      setMsg({ type:'error', text: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -420,9 +429,17 @@ function LoginPage() {
         setRegMsg({ type:'error', text: data.message || "Erreur lors de l'inscription." });
       }
     } catch (err) {
-      const errorData = err.response?.data;
-      setRegMsg({ type:'error', text: errorData ? Object.values(errorData).flat().join(' — ') : "Erreur lors de la création du compte." });
-    } finally {
+        console.error('❌ Register error:', err);
+        let errorMsg = "Erreur lors de la création du compte.";
+        if (err.response?.data) {
+          const data = err.response.data;
+          if (data.detail) errorMsg = data.detail;
+          else if (data.errors?.detail) errorMsg = data.errors.detail;
+          else if (data.errors) errorMsg = Object.values(data.errors).flat().join(' — ');
+          else if (data.message) errorMsg = data.message;
+        }
+        setRegMsg({ type:'error', text: errorMsg });
+      } finally {
       setLoading(false);
     }
   };
